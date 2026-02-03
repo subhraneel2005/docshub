@@ -5,11 +5,15 @@ todos:
   - id: setup-app-shell
     content: Initialize Next.js app (App Router) with shadcn/ui, Tailwind, base layouts, dashboard scaffolding.
     status: pending
+  - id: setup-db-prisma
+    content: Set up Postgres + Prisma (schema, migrations, Prisma Client), and NextAuth Prisma Adapter tables; document pooling/migration env vars.
+    status: pending
   - id: auth-github-nextauth
     content: Add NextAuth GitHub login, persist token securely, protect app routes.
     status: pending
     dependencies:
       - setup-app-shell
+      - setup-db-prisma
   - id: github-repo-readme
     content: Implement GitHub repo listing + README fetch endpoints and UI picker.
     status: pending
@@ -58,22 +62,26 @@ todos:
 - **Generate**: transform README → Nextra site (MDX + nav/meta), plus per-locale variants via Lingo.dev.
 - **Preview**: show a live preview inside Docshub (rendered from stored MDX) before exporting.
 - **Export**: push generated Nextra site to GitHub (same repo or new repo) and deploy to Vercel using user OAuth.
+- **Persistence**: Prisma + Postgres for users/projects/generations/artifacts/tokens + job state.
 
 ## Key architecture decisions
 
 - **Two outputs**:
   - **Preview output (in-app)**: render stored MDX using an internal MDX renderer (no full Next build) for fast/cheap preview.
   - **Export output (Nextra template)**: generate a real Nextra project on disk (from a template), then push it to GitHub and let Vercel build it.
-- **Async generation**: generation/translation/publish runs as a background job (so UI stays responsive and failures can be retried).
+- **Async generation**: generation/translation/publish runs as a background job; Prisma persists job status/logs for retries and UI polling.
+- **Database first**: Postgres is the source of truth; API routes are thin and call `lib/*` services that read/write via Prisma.
 
 ## Data model (minimal)
 
 - **User**: id, email, name, image.
 - **GitHubAccount**: userId, githubUserId, accessToken (encrypted), scope, tokenExpiresAt.
+- **VercelAccount**: userId, vercelUserId/teamId, accessToken (encrypted), tokenExpiresAt.
 - **Project**: id, userId, repoFullName, repoId, defaultBranch, readmePath, status, createdAt.
 - **Generation**: id, projectId, sourceSha, locales[], status, logs, createdAt.
 - **DocArtifact**: id, generationId, locale, mdxContent, metaJson, sidebar.
 - **PublishTarget**: id, projectId, type(github|vercel), config, lastStatus.
+- **(Implementation note)**: These map 1:1 to Prisma models in `prisma/schema.prisma` with indexes on `(userId)`, `(projectId)`, and `(repoId)` for fast listing.
 
 ## Main flows
 
@@ -198,7 +206,8 @@ sequenceDiagram
 
 ### 8) Persistence, jobs, observability
 
-- Prisma schema + migrations.
+- Prisma schema + migrations (Postgres), including NextAuth tables via Prisma Adapter.
+- Connection pooling strategy for serverless (e.g., PgBouncer or provider pooler) and `DATABASE_URL`/`DIRECT_URL` if needed.
 - Job runner integration (e.g., Inngest) and retries.
 - Audit logs, error reporting, rate limiting.
 
@@ -280,7 +289,7 @@ sequenceDiagram
 
 - **GitHub OAuth** (NextAuth): `GITHUB_ID`, `GITHUB_SECRET`
 - **NextAuth**: `NEXTAUTH_SECRET`, `NEXTAUTH_URL`
-- **Database**: `DATABASE_URL`
+- **Database (Postgres)**: `DATABASE_URL` (and optional `DIRECT_URL` for Prisma migrations/long connections)
 - **Lingo.dev**: `LINGO_API_KEY` (and optional project id)
 - **Vercel OAuth**: `VERCEL_CLIENT_ID`, `VERCEL_CLIENT_SECRET`, `VERCEL_REDIRECT_URI`
 
