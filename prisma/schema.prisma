@@ -1,0 +1,215 @@
+generator client {
+  provider = "prisma-client"
+  output   = "./generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  githubAccounts GithubAccount[]
+  vercelAccounts VercelAccount[]
+  projects       Project[]
+}
+
+model GithubAccount {
+  id     String @id @default(cuid())
+  userId String
+
+  githubUserId             String
+  accessToken              String
+  scope                    String
+  refresh_token            String?
+  refresh_token_expires_in Int?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, githubUserId])
+  @@index([userId])
+  @@index([githubUserId])
+}
+
+model VercelAccount {
+  id     String @id @default(cuid())
+  userId String
+
+  vercelUserId String
+  teamId       String?
+
+  accessToken String
+  scope       String?
+
+  tokenExpiresAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, vercelUserId, teamId])
+  @@index([userId])
+  @@index([vercelUserId])
+}
+
+model Project {
+  id     String @id @default(cuid())
+  userId String
+
+  repoFullName    String // e.g. "owner/name"
+  repoId          String
+  defaultBranch   String
+  readmePath      String? // e.g. "README.md" (optional override)
+  latestSourceSha String? // SHA used for last generation cache key
+
+  status ProjectStatus @default(active)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  generations    Generation[]
+  publishTargets PublishTarget[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, repoFullName])
+  @@index([userId])
+  @@index([repoId])
+}
+
+enum ProjectStatus {
+  active
+  archived
+}
+
+model Generation {
+  id        String @id @default(cuid())
+  projectId String
+
+  // identifies the exact git commit/build
+  sourceSha String
+  // langs for lingo.dev
+  locales   String[] // e.g. ["en","hi","es"]
+
+  status GenerationStatus @default(queued)
+  logs   Json?
+
+  project   Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  artifacts DocArtifact[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+  @@index([sourceSha])
+}
+
+enum GenerationStatus {
+  queued
+  running
+  ready
+  failed
+  cancelled
+}
+
+model DocArtifact {
+  id           String @id @default(cuid())
+  generationId String
+
+  locale     String // BCP-47-ish, e.g. "en", "hi", "pt-BR"
+  mdxContent String
+  metaJson   Json?
+  sidebar    Json?
+
+  generation Generation @relation(fields: [generationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([generationId, locale])
+  @@index([generationId])
+}
+
+model PublishTarget {
+  id        String @id @default(cuid())
+  projectId String
+
+  type   PublishTargetType
+  config Json
+
+  lastStatus PublishStatus @default(idle)
+  lastError  String?
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+}
+
+enum PublishTargetType {
+  github
+  vercel
+}
+
+enum PublishStatus {
+  idle
+  queued
+  running
+  success
+  failed
+}
+
+model Account {
+  userId                   String
+  type                     String
+  provider                 String
+  providerAccountId        String
+  refresh_token            String?
+  refresh_token_expires_in Int?
+  access_token             String?
+  expires_at               Int?
+  token_type               String?
+  scope                    String?
+  id_token                 String?
+  session_state            String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}

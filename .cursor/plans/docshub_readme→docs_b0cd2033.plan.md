@@ -11,7 +11,7 @@ todos:
     dependencies:
       - setup-app-shell
   - id: github-repo-readme
-    content: Implement GitHub repo listing + README fetch endpoints and UI picker.
+    content: Implement GitHub repo listing + README fetch endpoints and picker.
     status: pending
     dependencies:
       - auth-github-nextauth
@@ -212,10 +212,10 @@ sequenceDiagram
 
 ### App routes
 
-- [app/(marketing)/page.tsx](app/\\(marketing)/page.tsx) — landing
-- [app/(auth)/signin/page.tsx](app/\\(auth)/signin/page.tsx)
-- [app/(app)/layout.tsx](app/\\(app)/layout.tsx) — authenticated shell
-- [app/(app)/dashboard/page.tsx](app/\\(app)/dashboard/page.tsx) — list projects + connect repo
+- [app/(marketing)/page.tsx](app/\\\\\\\\\\\\\\\\\(marketing)/page.tsx) — landing
+- [app/(auth)/signin/page.tsx](app/\\\\\\\\\\\\\\\\\(auth)/signin/page.tsx)
+- [app/(app)/layout.tsx](app/\\\\\\\\\\\\\\\\\(app)/layout.tsx) — authenticated shell
+- [app/(app)/dashboard/page.tsx](app/\\\\\\\\\\\\\\\\\(app)/dashboard/page.tsx) — list projects + connect repo
 - [app/(app)/projects/[projectId]/page.tsx](app/(app)/projects/[projectId]/page.tsx) — generate/export controls
 - [app/(app)/projects/[projectId]/preview/[locale]/page.tsx](app/(app)/projects/[projectId]/preview/[locale]/page.tsx) — MDX preview
 
