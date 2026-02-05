@@ -1,8 +1,11 @@
 {
-  "name": "core",
+  "name": "@repo/core",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "exports": {
+    "./*": "./*.ts"
+  },
   "scripts": {},
   "keywords": [],
   "author": "",

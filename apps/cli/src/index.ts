@@ -3,7 +3,10 @@ import { Command } from "commander";
 import figlet from "figlet";
 import chalk from "chalk"
 import { login } from "./commands/login";
+import { fetchRepoFlow } from "./commands/generate";
 const program = new Command();
+
+let ghToken = "";
 
 program
     .name("docshub")
@@ -13,10 +16,20 @@ program
     ))
 
 program
-    .name("login")
+    .command("login")
     .description("login with github")
     .action(async () => {
-        await login();
+        ghToken = await login();
     });
+
+program
+    .command("fetch")
+    .description("get repo metadata and readme content")
+    .action(async () => {
+        if (!ghToken || ghToken == "") {
+            ghToken = await login();
+        }
+        await fetchRepoFlow(ghToken);
+    })
 
 program.parse();

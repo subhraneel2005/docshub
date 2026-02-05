@@ -27,9 +27,7 @@ export async function getRepoReadme(
         throw new Error("missing owner or repo");
     }
 
-    const githubAccessToken = " ";
-
-    const octokit = createOctokit(githubAccessToken);
+    const octokit = createOctokit(token);
 
 
     const [readme, repoData] = await Promise.all([

@@ -23,6 +23,9 @@ importers:
       '@octokit/auth-oauth-device':
         specifier: ^8.0.3
         version: 8.0.3
+      '@repo/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
@@ -51,6 +54,9 @@ importers:
       '@types/node':
         specifier: ^25.2.0
         version: 25.2.0
+      '@types/prompts':
+        specifier: ^2.4.9
+        version: 2.4.9
 
   apps/web:
     dependencies:
@@ -2248,6 +2254,9 @@ packages:
 
   '@types/node@25.2.0':
     resolution: {integrity: sha512-DZ8VwRFUNzuqJ5khrvwMXHmvPe+zGayJhr2CDNiKB1WBE1ST8Djl00D0IC4vvNmHMdj6DlbYRIaFE7WHjlDl5w==}
+
+  '@types/prompts@2.4.9':
+    resolution: {integrity: sha512-qTxFi6Buiu8+50/+3DGIWLHM6QuWsEKugJnnP6iv2Mc4ncxE4A/OJkjuVOA+5X0X1S/nq5VJRa8Lu+nwcvbrKA==}
 
   '@types/react-dom@19.2.2':
     resolution: {integrity: sha512-9KQPoO6mZCi7jcIStSnlOWn2nEF3mNmyr3rIAsGnAbQKYbRLyqmeSc39EVgtxXVia+LMT8j3knZLAZAh+xLmrw==}
@@ -7608,6 +7617,11 @@ snapshots:
   '@types/node@25.2.0':
     dependencies:
       undici-types: 7.16.0
+
+  '@types/prompts@2.4.9':
+    dependencies:
+      '@types/node': 25.2.0
+      kleur: 3.0.3
 
   '@types/react-dom@19.2.2(@types/react@19.2.2)':
     dependencies:
