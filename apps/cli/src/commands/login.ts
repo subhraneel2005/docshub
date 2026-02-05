@@ -42,4 +42,5 @@ export async function login() {
     );
 
     console.log(chalk.gray("token:"), brand(result.token));
+    return result.token;
 }
