@@ -32,7 +32,7 @@ export async function login() {
 
     console.log(
         boxen(
-            brand.bold("✓ authenticated with github"),
+            brand.bold("authentication successfull"),
             {
                 padding: 1,
                 borderStyle: "round",

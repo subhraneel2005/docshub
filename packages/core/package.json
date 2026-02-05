@@ -13,6 +13,7 @@
   "dependencies": {
     "@octokit/auth-oauth-device": "^8.0.3",
     "@octokit/rest": "^22.0.1",
+    "@octokit/types": "^16.0.0",
     "@repo/typescript-config": "workspace:*",
     "github-slugger": "^2.0.0",
     "mdast": "^3.0.0",
