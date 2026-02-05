@@ -3,7 +3,6 @@ import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 
 import "./globals.css";
-import NextAuthProvider from "@/lib/providers/next-auth-provider";
 import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
@@ -23,7 +22,7 @@ export default function RootLayout({
         className={`${GeistMono.className} antialiased dark`}
       >
         <Toaster richColors position="top-center" style={{ fontFamily: "inherit" }} />
-        <NextAuthProvider>{children}</NextAuthProvider>
+        {children}
       </body>
     </html>
   );
