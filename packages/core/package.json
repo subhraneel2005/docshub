@@ -11,16 +11,20 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@ai-sdk/google": "^3.0.21",
     "@octokit/auth-oauth-device": "^8.0.3",
     "@octokit/rest": "^22.0.1",
     "@octokit/types": "^16.0.0",
     "@repo/typescript-config": "workspace:*",
+    "ai": "^6.0.73",
+    "dotenv": "^17.2.3",
     "github-slugger": "^2.0.0",
     "mdast": "^3.0.0",
     "mdast-util-to-string": "^4.0.0",
     "remark-gfm": "^4.0.1",
     "remark-parse": "^11.0.0",
-    "unified": "^11.0.5"
+    "unified": "^11.0.5",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/node": "^25.2.0"
