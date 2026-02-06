@@ -1,8 +1,9 @@
 import "dotenv/config"
 import { generateText, Output } from 'ai';
-import { google } from "@ai-sdk/google";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { SYSTEM_PROMPT } from '../../prompts/system-prompt';
 import { DocPlanSchema } from "../../schema/doc-plan";
+import { google } from "../../lib/google";
 
 type RepoData = {
     name: string;

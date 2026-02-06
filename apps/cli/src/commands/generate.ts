@@ -1,4 +1,7 @@
-import "dotenv/config"
+import { config } from "dotenv";
+import { resolve } from "path";
+
+config({ path: resolve(process.cwd(), ".env") });
 
 import prompts from "prompts";
 import chalk from "chalk";
@@ -10,8 +13,12 @@ import ora from "ora";
 import { contentGenerator } from "@repo/core/actions/ai/content-generator";
 import { repoSummariser } from "@repo/core/actions/ai/repo-summarizer"
 import { generatePages } from "@repo/core/actions/ai/generate-single-pages"
+import { scaffoldDocs } from "@repo/core/actions/scafold/write-files";
+import { createNextNextraApp } from "../lib/create-nextra-app";
+import { getTargetDir } from "../lib/get-target-dir";
+import { DocType } from "@repo/core/schema/doc-plan";
 
-export async function fetchRepoFlow(token: string) {
+export async function fetchRepoFlow(token: string, cliArgProjectName?: string) {
 
 
     if (!token) {
@@ -36,6 +43,7 @@ export async function fetchRepoFlow(token: string) {
 
 
     const { owner, repo } = response;
+    const targetDir = await getTargetDir();
 
     try {
         const result = await getRepoReadme(token, owner, repo);
@@ -85,11 +93,39 @@ export async function fetchRepoFlow(token: string) {
         console.dir(repoSummary, { depth: null });
 
         const spinner4 = ora({ text: chalk.hex("#5FCD01")("Generating single pages...") }).start();
-        const singlePages = await generatePages(repoSummary, llmResponse.pages);
-        spinner4.succeed(chalk.hex("#5FCD01")("Single pages generated successfully!"));
 
+        const plan: DocType = {
+            totalPages: llmResponse.totalPages,
+            structure: llmResponse.structure,
+            pages: llmResponse.pages.map((p: typeof llmResponse.pages[number]) => ({
+                filename: p.filename,
+                title: p.title,
+                description: p.description,
+                sections: p.sections,
+                estimatedLength: p.estimatedLength,
+                path: p.path
+            }))
+        };
+        // After generating single pages
+        const singlePages = await generatePages(repoSummary, plan);
+        spinner4.succeed(chalk.hex("#5FCD01")("Single pages generated successfully!"));
+        console.log(`\n📄 Generated ${singlePages.pages.length} pages:`);
+        singlePages.pages.forEach(p => console.log(`  - ${p.filename}`));
         console.log("\nsingle pages:\n");
         console.dir(singlePages, { depth: null });
+
+        /* ---------- create nextra app ---------- */
+        const spinner5 = ora("Creating docs project...").start();
+        await createNextNextraApp(targetDir);
+        spinner5.succeed("Docs project created");
+
+        /* ---------- write mdx ---------- */
+        const spinner6 = ora("Writing documentation files...").start();
+        // ✅ Pass singlePages, not llmResponse.pages
+        await scaffoldDocs(targetDir, singlePages);
+        spinner6.succeed("Docs written successfully");
+
+        console.log(chalk.green("\n✨ docs ready → " + targetDir));
 
     } catch (err: any) {
         console.log(chalk.red("failed to fetch repo"));
