@@ -1,4 +1,9 @@
-import "dotenv/config";
+import { config } from "dotenv";
+import { resolve } from "path";
+
+config({ path: resolve(process.cwd(), ".env") });
+
+
 import chalk from "chalk";
 import boxen from "boxen";
 import { createOAuthDeviceAuth } from "@octokit/auth-oauth-device";
@@ -7,7 +12,7 @@ const brand = chalk.hex("#5FCD01");
 
 export async function login() {
     const auth = createOAuthDeviceAuth({
-        clientId: process.env.GITHUB_OAUTH_CLIENT_ID!,
+        clientId: "Ov23lipvLXeJE8bAsdfT",
         scopes: ["repo", "read:user"],
         onVerification: ({ verification_uri, user_code }) => {
             console.log(

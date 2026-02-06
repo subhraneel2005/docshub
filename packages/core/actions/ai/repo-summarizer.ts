@@ -1,6 +1,6 @@
 import { generateText, Output } from "ai";
-import { google } from "@ai-sdk/google";
 import { RepoSummarySchema } from "../../schema/repo-summary";
+import { google } from "../../lib/google";
 
 
 type RepoData = {

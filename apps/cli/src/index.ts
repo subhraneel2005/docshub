@@ -1,11 +1,10 @@
 #!/usr/bin/env node
+import "dotenv/config";
 import { Command } from "commander";
-import figlet from "figlet";
 import chalk from "chalk"
 import { login } from "./commands/login";
 import { fetchRepoFlow } from "./commands/generate";
-import { fetchRepoStructure } from "@repo/core/actions/github/fetch-file-tree";
-import { printRepoTree } from "./lib/print-repo-tree";
+
 const program = new Command();
 
 let ghToken = "";

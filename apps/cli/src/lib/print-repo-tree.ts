@@ -1,15 +1,18 @@
 import { RepoFile } from "@repo/core/actions/github/fetch-file-tree";
-import chalk from "chalk";
 
-export function printRepoTree(structure: RepoFile[], indent = "") {
+export function printRepoTree(structure: RepoFile[], indent = ""): string {
+    let output = "";
+
     for (const item of structure) {
         if (item.type === "dir") {
-            console.log(indent + chalk.hex("#5FCD01").bold(`📁 ${item.name}/`));
+            output += `${indent}📁 ${item.name}/\n`;
             if (item.children && item.children.length > 0) {
-                printRepoTree(item.children, indent + "  "); // indent children
+                output += printRepoTree(item.children, indent + "  "); // indent children
             }
         } else if (item.type === "file") {
-            console.log(indent + chalk.hex("#5FCD01")(`-${item.name}`));
+            output += `${indent}-${item.name}\n`;
         }
     }
+
+    return output;
 }
