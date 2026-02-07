@@ -14,9 +14,10 @@ import { contentGenerator } from "@repo/core/actions/ai/content-generator";
 import { repoSummariser } from "@repo/core/actions/ai/repo-summarizer"
 import { generatePages } from "@repo/core/actions/ai/generate-single-pages"
 import { scaffoldDocs } from "@repo/core/actions/scafold/write-files";
-import { createNextNextraApp } from "../lib/create-nextra-app";
 import { getTargetDir } from "../lib/get-target-dir";
 import { DocType } from "@repo/core/schema/doc-plan";
+import { runLingoTranslations } from "../lib/run-lingo-translations";
+import { step } from "../lib/step";
 
 export async function fetchRepoFlow(token: string, cliArgProjectName?: string) {
 
@@ -43,28 +44,16 @@ export async function fetchRepoFlow(token: string, cliArgProjectName?: string) {
 
 
     const { owner, repo } = response;
-    const targetDir = await getTargetDir();
 
     try {
         const result = await getRepoReadme(token, owner, repo);
 
-        console.log(
-            boxen(chalk.hex("#5FCD01").bold("REPO METADATA"), { padding: 1, borderColor: "#5FCD01" })
-        );
-        console.log(result.metadata);
+        console.log(chalk.green("✔ metadata + readme fetched"));
 
-        console.log(
-            boxen(chalk.hex("#5FCD01").bold("README"), { padding: 1, borderColor: "#5FCD01" })
+        const structure = await step(
+            "analyzing repository...",
+            () => fetchRepoStructure(token, owner, repo)
         );
-        console.log(result.readme);
-
-        console.log(
-            boxen(chalk.hex("#5FCD01").bold("REPO FOLDER STRUCTURE"), { padding: 1, borderColor: "#5FCD01" })
-        );
-        const spinner = ora({ text: chalk.hex("#5FCD01")("Fetching folder structure...") }).start();
-        const structure = await fetchRepoStructure(token, owner, repo);
-        spinner.succeed(chalk.hex("#5FCD01")("Folder structure fetched successfully!"));
-        printRepoTree(structure);
 
         const repoData = {
             name: result.metadata.name?.toString() ?? "",
@@ -75,24 +64,18 @@ export async function fetchRepoFlow(token: string, cliArgProjectName?: string) {
             structure: printRepoTree(structure) ?? ""
         };
 
-        console.log("\nrepodata:\n");
-        console.dir(repoData, { depth: null });
+        const llmResponse = await step(
+            "generating documentation plan...",
+            () => contentGenerator(repoData)
+        );
 
-        const spinner2 = ora({ text: chalk.hex("#5FCD01")("AI is generating docs content...") }).start();
-        const llmResponse = await contentGenerator(repoData);
-        spinner2.succeed(chalk.hex("#5FCD01")("Docs content generated successfully!"));
+        const repoSummary = await step(
+            "generating repository summary...",
+            () => repoSummariser(repoData)
+        );
 
-        console.log("\nllm response:\n");
-        console.dir(llmResponse, { depth: null });
 
-        const spinner3 = ora({ text: chalk.hex("#5FCD01")("Generating AI summary...") }).start();
-        const repoSummary = await repoSummariser(repoData);
-        spinner3.succeed(chalk.hex("#5FCD01")("AI Summary generated successfully!"));
 
-        console.log("\nrepo summary:\n");
-        console.dir(repoSummary, { depth: null });
-
-        const spinner4 = ora({ text: chalk.hex("#5FCD01")("Generating single pages...") }).start();
 
         const plan: DocType = {
             totalPages: llmResponse.totalPages,
@@ -106,29 +89,47 @@ export async function fetchRepoFlow(token: string, cliArgProjectName?: string) {
                 path: p.path
             }))
         };
-        // After generating single pages
-        const singlePages = await generatePages(repoSummary, plan);
-        spinner4.succeed(chalk.hex("#5FCD01")("Single pages generated successfully!"));
-        console.log(`\n📄 Generated ${singlePages.pages.length} pages:`);
-        singlePages.pages.forEach(p => console.log(`  - ${p.filename}`));
-        console.log("\nsingle pages:\n");
-        console.dir(singlePages, { depth: null });
 
-        /* ---------- create nextra app ---------- */
-        const spinner5 = ora("Creating docs project...").start();
-        await createNextNextraApp(targetDir);
-        spinner5.succeed("Docs project created");
+        const singlePages = await step(
+            "writing english docs...",
+            () => generatePages(repoSummary, plan)
+        );
+
+        console.log(`\n📄 generated ${singlePages.pages.length} pages:`);
+        singlePages.pages.forEach(p => console.log(`  - ${p.filename}`));
+
 
         /* ---------- write mdx ---------- */
-        const spinner6 = ora("Writing documentation files...").start();
-        // ✅ Pass singlePages, not llmResponse.pages
-        await scaffoldDocs(targetDir, singlePages);
-        spinner6.succeed("Docs written successfully");
+        const uniqueDir = await step(
+            "saving mdx files...",
+            () => scaffoldDocs(singlePages, "en")
+        );
 
-        console.log(chalk.green("\n✨ docs ready → " + targetDir));
+
+        /* ---------- tranlate using lingo-cli ---------- */
+        await step(
+            "translating with lingo.dev...",
+            () =>
+                runLingoTranslations(
+                    { targets: ["es", "fr", "de", "ja", "hi"] },
+                    uniqueDir
+                )
+        );
+
+        console.log(`
+            ${chalk.green("✔ documentation generated")}
+            ${chalk.gray("location:")} ${uniqueDir}
+            ${chalk.gray("languages:")} en, es, fr, de, ja, hi
+            `);
+
+
 
     } catch (err: any) {
-        console.log(chalk.red("failed to fetch repo"));
-        console.error(err.message);
+        console.log(`
+            ${chalk.red("✖ documentation generation failed")}
+            ${chalk.gray("reason:")} ${err?.message || "unknown error"}
+            `);
+        process.exit(1);
+
     }
 }

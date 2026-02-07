@@ -1,38 +1,46 @@
 import path from "path";
 import fs from "fs-extra";
 import { GeneratedPages } from "../../schema/single-doc-page";
-import chalk from "chalk"
+import chalk from "chalk";
 
-export type GeneratedDocs = {
-    pages: GeneratedPages["pages"];
-};
-
-export async function scaffoldDocs(dir: string, docs: GeneratedPages) {
-    const contentDir = path.join(dir, "content", "en");
+export async function scaffoldDocs(docs: GeneratedPages, lang = "en") {
+    const unique = `docs-content-${Date.now()}`; // unique dir
+    const contentDir = path.join(process.cwd(), unique, lang);
 
     await fs.ensureDir(contentDir);
 
-    // meta
-    const meta = docs.pages.map((p) => ({
-        title: p.title,
-        route: "/" + p.filename.replace(".mdx", ""),
-    }));
+    const meta = docs.pages.map((p) => {
+        const filename = p.filename.replace(/\.md$/i, ".mdx");
+        return {
+            title: p.title,
+            route: "/" + filename.replace(/\.mdx$/i, ""),
+        };
+    });
 
     await fs.writeFile(
         path.join(contentDir, "_meta.js"),
         `export default ${JSON.stringify(meta, null, 2)}`
     );
 
-    // pages
     for (const page of docs.pages) {
-        console.log(chalk.cyan(`Writing ${page.filename}...`)); // Add logging
+        const filename = page.filename.replace(/\.md$/i, ".mdx");
 
-        // ✅ content is now available from singlePages
+        console.log(chalk.cyan(`Writing ${filename}...`));
+
+        const frontmatter = `---
+        title: ${JSON.stringify(page.title)}
+        description: ${JSON.stringify(page.description)}
+        filename: ${JSON.stringify(page.filename)}
+        ---\n\n`;
+
+
         await fs.writeFile(
-            path.join(contentDir, page.filename),
-            page.content // This now exists because singlePages has it
+            path.join(contentDir, filename),
+            frontmatter + page.content
         );
     }
 
-    console.log(chalk.green(`\n✅ Wrote ${docs.pages.length} pages`));
+    console.log(chalk.green(`\n✅ Wrote ${docs.pages.length} pages → ${unique}/${lang}`));
+
+    return unique;
 }

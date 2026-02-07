@@ -1,20 +1,31 @@
 #!/usr/bin/env node
 import "dotenv/config";
 import { Command } from "commander";
-import chalk from "chalk"
+import chalk from "chalk";
+import figlet from "figlet";
 import { login } from "./commands/login";
 import { fetchRepoFlow } from "./commands/generate";
 
 const program = new Command();
-
 let ghToken = "";
+
+function showHeader() {
+    console.log(
+        chalk.hex("#39FF14").bold(
+            figlet.textSync("DOCSHUB", {
+                font: "Block", // "Block" or "Standard" provide the filled look
+                horizontalLayout: "fitted",
+            })
+        )
+    );
+}
 
 program
     .name("docshub")
     .description("generate docs from readme")
-    .action(() => console.log(
-        chalk.hex("#5FCD01").bold("DOCSHUB")
-    ))
+    .hook("preAction", () => {
+        showHeader();
+    });
 
 program
     .command("login")
@@ -24,13 +35,13 @@ program
     });
 
 program
-    .command("fetch")
+    .command("init")
     .description("get repo metadata and readme content")
     .action(async () => {
-        if (!ghToken || ghToken == "") {
+        if (!ghToken) {
             ghToken = await login();
         }
-        fetchRepoFlow(ghToken);
-    })
+        await fetchRepoFlow(ghToken);
+    });
 
 program.parse();

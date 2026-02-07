@@ -12,8 +12,14 @@ export async function generatePages(summary: RepoSummary, plan: DocType): Promis
         const { output } = await generateText({
             model: google("gemini-2.5-flash"),
             system: `you are a senior technical documentation writer.
-generate full MDX documentation pages.
-developer focused. structured.`,
+
+OUTPUT STRICT VALID MDX:
+- markdown + JSX allowed
+- use fenced code blocks
+- allow imports/components if useful
+
+write like official developer docs.
+structured, technical, clear.`,
             output: Output.object({
                 schema: GeneratedPageSchema  // ✅ Single page schema
             }),
@@ -29,16 +35,20 @@ Sections: ${pageSpec.sections.join(", ")}
 Length: ${pageSpec.estimatedLength}
 
 requirements:
-- generate FULL MDX content (do NOT include frontmatter, we'll add it separately)
+- output STRICT VALID MDX
+- no frontmatter
+- use mdx compatible syntax
+- support JSX components if needed
 - 1000–1800 words
-- proper headings (## for main sections, ### for subsections)
-- include code examples if relevant
-- use the sections list as a guide for structure
+- ## main sections
+- ### subsections
+- code examples when relevant
+
 `
         });
 
         generatedPages.push(output as GeneratedPage);
-        console.log(`✅ Generated: ${pageSpec.filename}`);
+        console.log(`generated: ${pageSpec.filename}`);
     }
 
     return { pages: generatedPages };
