@@ -1,51 +1,43 @@
 import { config } from "dotenv";
 import { resolve } from "path";
-
 config({ path: resolve(process.cwd(), ".env") });
 
-
 import chalk from "chalk";
-import boxen from "boxen";
+import ora from "ora";
+import figlet from "figlet";
 import { createOAuthDeviceAuth } from "@octokit/auth-oauth-device";
 
-const brand = chalk.hex("#5FCD01");
-
 export async function login() {
+
+    const spinner = ora(chalk.cyan("starting github device auth...")).start();
+
     const auth = createOAuthDeviceAuth({
-        clientId: "Ov23lipvLXeJE8bAsdfT",
+        clientId: "",
         scopes: ["repo", "read:user"],
         onVerification: ({ verification_uri, user_code }) => {
-            console.log(
-                boxen(
-                    [
-                        brand.bold("DOCSHUB LOGIN"),
-                        "",
-                        chalk.white("1. open: ") + chalk.underline(verification_uri),
-                        chalk.white("2. enter code: ") + brand.bold(user_code),
-                    ].join("\n"),
-                    {
-                        padding: 1,
-                        borderStyle: "round",
-                        borderColor: "#5FCD01",
-                    }
-                )
-            );
+            spinner.stop();
+
+            console.log("\n" + chalk.green("github login required"));
+            console.log(chalk.gray("open: "), chalk.underline(verification_uri));
+            console.log(chalk.gray("code: "), chalk.yellow(user_code) + "\n");
+
+            spinner.start(chalk.cyan("waiting for authentication..."));
         },
     });
 
-    const result = await auth({ type: "oauth" });
+    try {
+        const result = await auth({ type: "oauth" });
 
-    console.log(
-        boxen(
-            brand.bold("authentication successfull"),
-            {
-                padding: 1,
-                borderStyle: "round",
-                borderColor: "#5FCD01",
-            }
-        )
-    );
+        spinner.succeed(chalk.green("✔ authentication complete"));
 
-    console.log(chalk.gray("token:"), brand(result.token));
-    return result.token;
+        console.log(`
+${chalk.green("✔ github connected")}
+${chalk.gray("status:")} ready
+`);
+
+        return result.token;
+    } catch (err: any) {
+        spinner.fail(chalk.red("authentication failed"));
+        throw err;
+    }
 }
