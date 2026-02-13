@@ -1,18 +1,24 @@
 import { config } from "dotenv";
 import { resolve } from "path";
-config({ path: resolve(process.cwd(), ".env") });
+config({ path: resolve(process.cwd(), ".env"), quiet: true });
 
 import chalk from "chalk";
 import ora from "ora";
-import figlet from "figlet";
 import { createOAuthDeviceAuth } from "@octokit/auth-oauth-device";
+import { CONFIG } from "@repo/core/config/env";
 
 export async function login() {
 
     const spinner = ora(chalk.cyan("starting github device auth...")).start();
 
+    process.on("SIGINT", () => {
+        spinner.stop();
+        console.log(chalk.red("\n✖ cancelled by user"));
+        process.exit(0);
+    });
+
     const auth = createOAuthDeviceAuth({
-        clientId: "",
+        clientId: CONFIG.GITHUB_OAUTH_CLIENT_ID,
         scopes: ["repo", "read:user"],
         onVerification: ({ verification_uri, user_code }) => {
             spinner.stop();
