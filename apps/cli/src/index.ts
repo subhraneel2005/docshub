@@ -1,24 +1,34 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 import "dotenv/config";
 import { Command } from "commander";
 import chalk from "chalk";
+import gradient from "gradient-string";
 import figlet from "figlet";
 import { login } from "./commands/login";
 import { fetchRepoFlow } from "./commands/generate";
+import { renderCliHeader } from "./lib/header";
+
+
 
 const program = new Command();
 let ghToken = "";
 
 function showHeader() {
-    console.log(
-        chalk.hex("#39FF14").bold(
-            figlet.textSync("DOCSHUB", {
-                font: "Block", // "Block" or "Standard" provide the filled look
-                horizontalLayout: "fitted",
-            })
-        )
-    );
+    renderCliHeader();
 }
+
+function setupExitHandlers() {
+    const exit = () => {
+        console.log("\nExiting...");
+        process.exit(0);
+    };
+
+    process.on("SIGINT", exit);   // ctrl + c
+    process.on("SIGTERM", exit);  // kill
+}
+
+setupExitHandlers();
+
 
 program
     .name("docshub")

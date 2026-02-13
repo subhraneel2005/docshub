@@ -1,7 +1,7 @@
 import { config } from "dotenv";
 import { resolve } from "path";
 
-config({ path: resolve(process.cwd(), ".env") });
+config({ path: resolve(process.cwd(), ".env"), quiet: true });
 
 import prompts from "prompts";
 import chalk from "chalk";
@@ -15,7 +15,7 @@ import { repoSummariser } from "@repo/core/actions/ai/repo-summarizer"
 import { generatePages } from "@repo/core/actions/ai/generate-single-pages"
 import { scaffoldDocs } from "@repo/core/actions/scafold/write-files";
 import { getTargetDir } from "../lib/get-target-dir";
-import { DocType } from "@repo/core/schema/doc-plan";
+import type { DocType } from "@repo/core/schema/doc-plan";
 import { runLingoTranslations } from "../lib/run-lingo-translations";
 import { step } from "../lib/step";
 

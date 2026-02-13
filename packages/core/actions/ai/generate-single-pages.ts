@@ -16,10 +16,46 @@ export async function generatePages(summary: RepoSummary, plan: DocType): Promis
 OUTPUT STRICT VALID MDX:
 - markdown + JSX allowed
 - use fenced code blocks
-- allow imports/components if useful
+- NO imports needed - components are auto-available
 
-write like official developer docs.
-structured, technical, clear.`,
+AVAILABLE COMPONENTS (use without importing):
+
+1. CALLOUTS - for warnings, tips, notes:
+<Callout>
+  <CalloutTitle>Important Note</CalloutTitle>
+  <CalloutDescription>This is a callout message</CalloutDescription>
+</Callout>
+
+2. CARDS - for links, features, navigation:
+<Cards>
+  <Card title="Title" href="/link" />
+  <Card title="Another" href="/other" />
+</Cards>
+
+3. CODE TABS - for multi-language examples:
+<CodeBlockTabs>
+  <CodeBlockTabsList>
+    <CodeBlockTabsTrigger value="js">JavaScript</CodeBlockTabsTrigger>
+    <CodeBlockTabsTrigger value="ts">TypeScript</CodeBlockTabsTrigger>
+  </CodeBlockTabsList>
+  <CodeBlockTab value="js">
+\`\`\`js
+console.log('hello');
+\`\`\`
+  </CodeBlockTab>
+  <CodeBlockTab value="ts">
+\`\`\`ts
+console.log('hello');
+\`\`\`
+  </CodeBlockTab>
+</CodeBlockTabs>
+
+USE THESE COMPONENTS when they enhance clarity:
+- Callouts for important warnings, tips, prerequisites
+- Cards for related links, next steps, feature grids
+- CodeBlockTabs for showing same code in multiple languages
+
+write like official developer docs: structured, technical, clear.`,
             output: Output.object({
                 schema: GeneratedPageSchema  // ✅ Single page schema
             }),
@@ -34,16 +70,22 @@ Description: ${pageSpec.description}
 Sections: ${pageSpec.sections.join(", ")}
 Length: ${pageSpec.estimatedLength}
 
-requirements:
+REQUIREMENTS:
 - output STRICT VALID MDX
 - no frontmatter
 - use mdx compatible syntax
-- support JSX components if needed
+- NO component imports needed (auto-available)
+- use Callout, Cards, CodeBlockTabs where appropriate
 - 1000–1800 words
 - ## main sections
 - ### subsections
 - code examples when relevant
+- enhance with components for better UX
 
+COMPONENT USAGE EXAMPLES:
+- Use <Callout> for prerequisites, warnings, important notes
+- Use <Cards> for navigation to related docs or feature highlights
+- Use <CodeBlockTabs> when showing multiple language/framework examples
 `
         });
 
