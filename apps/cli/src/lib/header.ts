@@ -1,8 +1,4 @@
-const RESET = '\x1b[0m';
-const BOLD = '\x1b[1m';
-// 256-color grays - visible on both light and dark backgrounds
-const DIM = '\x1b[38;5;102m'; // darker gray for secondary text
-const TEXT = '\x1b[38;5;145m'; // lighter gray for primary text
+import { TextRenderable, Box, t, fg, CliRenderer } from "@opentui/core";
 
 const LOGO_LINES = [
     '██████╗   ██████╗   ██████╗ ███████╗ ██╗  ██╗ ██╗   ██╗ ██████╗ ',
@@ -13,21 +9,25 @@ const LOGO_LINES = [
     '╚═════╝   ╚═════╝   ╚═════╝ ╚══════╝ ╚═╝  ╚═╝  ╚═════╝  ╚═════╝ ',
 ];
 
-
-// 256-color middle grays - visible on both light and dark backgrounds
-const GRAYS = [
-    '\x1b[38;5;250m', // lighter gray
+// 256-color middle grays - visible on both light and dark backgrounds 
+const GRAYS = ['\x1b[38;5;250m',
     '\x1b[38;5;248m',
-    '\x1b[38;5;245m', // mid gray
+    '\x1b[38;5;245m',
     '\x1b[38;5;243m',
     '\x1b[38;5;240m',
-    '\x1b[38;5;238m', // darker gray
-];
+    '\x1b[38;5;238m',];
 
-export function renderCliHeader() {
-    console.log();
-    LOGO_LINES.forEach((line, i) => {
-        console.log(`${GRAYS[i]}${line}${RESET}`);
-    });
+export function renderCliHeader(renderer: CliRenderer) {
+    const headerBox = Box(
+        { flexDirection: "column", paddingTop: 1, paddingBottom: 1 },
+        ...LOGO_LINES.map((line, i) => {
+            const color: string = GRAYS[i]! ?? GRAYS[0]; // cast to string
+            return new TextRenderable(renderer, {
+                id: `header-line-${i}`,
+                content: t`${fg(color)(line)}`,
+            });
+        })
+    );
 
+    renderer.root.add(headerBox);
 }
