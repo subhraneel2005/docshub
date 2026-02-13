@@ -7,14 +7,18 @@ import figlet from "figlet";
 import { login } from "./commands/login";
 import { fetchRepoFlow } from "./commands/generate";
 import { renderCliHeader } from "./lib/header";
+import { createCliRenderer } from "@opentui/core";
 
 
 
 const program = new Command();
 let ghToken = "";
 
+const renderer = await createCliRenderer({ targetFps: 30, exitOnCtrlC: true, });
+
+
 function showHeader() {
-    renderCliHeader();
+    renderCliHeader(renderer);
 }
 
 function setupExitHandlers() {
@@ -41,7 +45,7 @@ program
     .command("login")
     .description("login with github")
     .action(async () => {
-        ghToken = await login();
+        ghToken = await login(renderer);
     });
 
 program
@@ -49,9 +53,9 @@ program
     .description("get repo metadata and readme content")
     .action(async () => {
         if (!ghToken) {
-            ghToken = await login();
+            ghToken = await login(renderer);
         }
-        await fetchRepoFlow(ghToken);
+        await fetchRepoFlow(ghToken, renderer);
     });
 
 program.parse();

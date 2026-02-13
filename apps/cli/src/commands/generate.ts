@@ -1,135 +1,141 @@
 import { config } from "dotenv";
 import { resolve } from "path";
-
 config({ path: resolve(process.cwd(), ".env"), quiet: true });
 
-import prompts from "prompts";
-import chalk from "chalk";
 import { getRepoReadme } from "@repo/core/actions/github/get-repo-readme";
 import { fetchRepoStructure } from "@repo/core/actions/github/fetch-file-tree";
 import { printRepoTree } from "../lib/print-repo-tree";
-import boxen from "boxen";
-import ora from "ora";
 import { contentGenerator } from "@repo/core/actions/ai/content-generator";
-import { repoSummariser } from "@repo/core/actions/ai/repo-summarizer"
-import { generatePages } from "@repo/core/actions/ai/generate-single-pages"
-import { scaffoldDocs } from "@repo/core/actions/scafold/write-files";
+import { repoSummariser } from "@repo/core/actions/ai/repo-summarizer";
+import { generatePages } from "@repo/core/actions/ai/generate-single-pages";
 import { getTargetDir } from "../lib/get-target-dir";
-import type { DocType } from "@repo/core/schema/doc-plan";
 import { runLingoTranslations } from "../lib/run-lingo-translations";
 import { step } from "../lib/step";
+import type { DocType } from "@repo/core/schema/doc-plan";
 
-export async function fetchRepoFlow(token: string, cliArgProjectName?: string) {
+import { createCliRenderer, TextRenderable, InputRenderable, InputRenderableEvents, t, Box, CliRenderer } from "@opentui/core";
+import { scaffoldDocs } from "@repo/core/actions/scafold/write-files";
 
-
+export async function fetchRepoFlow(token: string, renderer: CliRenderer, cliArgProjectName?: string) {
     if (!token) {
-        console.log(chalk.red("not logged in. run `docshub login` first."));
+        console.log("not logged in. run `docshub login` first.");
         return;
     }
 
-    const response = await prompts([
-        {
-            type: "text",
-            name: "owner",
-            message: chalk.hex("#5FCD01").bold("github username / org:"),
-            validate: (v) => (v ? true : "required"),
-        },
-        {
-            type: "text",
-            name: "repo",
-            message: chalk.hex("#5FCD01").bold("repository name:"),
-            validate: (v) => (v ? true : "required"),
-        },
-    ]);
+    renderer.start();
 
+    // Helper to prompt for input
+    async function promptInput(label: string): Promise<string> {
+        return new Promise((resolveInput) => {
+            const labelText = new TextRenderable(renderer, {
+                id: `label-${label}`,
+                content: t`${label}:`,
+            });
+            renderer.root.add(labelText);
 
-    const { owner, repo } = response;
+            const inputRenderable = new InputRenderable(renderer, {
+                id: `input-${label}`,
+                placeholder: `Enter ${label}...`,
+                width: 50,
+            });
+
+            renderer.root.add(inputRenderable);
+            inputRenderable.focus();
+
+            inputRenderable.on(InputRenderableEvents.CHANGE, (value: string) => {
+                // renderer.root.remove(labelText);
+                // renderer.root.remove(inputRenderable);
+                resolveInput(value.trim());
+            });
+        });
+    }
+
+    const owner = await promptInput("github username / org");
+    const repo = await promptInput("repository name");
 
     try {
-        const result = await getRepoReadme(token, owner, repo);
+        await step("fetching metadata + readme...", async () => {
+            const result = await getRepoReadme(token, owner, repo);
 
-        console.log(chalk.green("✔ metadata + readme fetched"));
+            const status = new TextRenderable(renderer, {
+                id: "status-readme",
+                content: t`✔ metadata + readme fetched`,
+            });
+            renderer.root.add(status);
 
-        const structure = await step(
-            "analyzing repository...",
-            () => fetchRepoStructure(token, owner, repo)
-        );
+            const structure = await step("analyzing repository...", () =>
+                fetchRepoStructure(token, owner, repo)
+            );
 
-        const repoData = {
-            name: result.metadata.name?.toString() ?? "",
-            description: result.metadata.descriptions?.toString() ?? "",
-            language: result.metadata.language?.toString() ?? "",
-            topics: result.metadata.topics ?? [],
-            readme: result.readme?.toString() ?? "",
-            structure: printRepoTree(structure) ?? ""
-        };
+            const repoData = {
+                name: result.metadata.name?.toString() ?? "",
+                description: result.metadata.descriptions?.toString() ?? "",
+                language: result.metadata.language?.toString() ?? "",
+                topics: result.metadata.topics ?? [],
+                readme: result.readme?.toString() ?? "",
+                structure: printRepoTree(structure) ?? "",
+            };
 
-        const llmResponse = await step(
-            "generating documentation plan...",
-            () => contentGenerator(repoData)
-        );
+            const llmResponse = await step("generating documentation plan...", () =>
+                contentGenerator(repoData)
+            );
 
-        const repoSummary = await step(
-            "generating repository summary...",
-            () => repoSummariser(repoData)
-        );
+            const repoSummary = await step("generating repository summary...", () =>
+                repoSummariser(repoData)
+            );
 
+            const plan: DocType = {
+                totalPages: llmResponse.totalPages,
+                structure: llmResponse.structure,
+                pages: llmResponse.pages.map((p: any) => ({
+                    filename: p.filename,
+                    title: p.title,
+                    description: p.description,
+                    sections: p.sections,
+                    estimatedLength: p.estimatedLength,
+                    path: p.path,
+                })),
+            };
 
+            const singlePages = await step("writing english docs...", () =>
+                generatePages(repoSummary, plan)
+            );
 
+            const pagesBox = new TextRenderable(renderer, {
+                id: "pages-list",
+                content: t`📄 generated ${singlePages.pages.length} pages:\n${singlePages.pages
+                    .map((p) => `  - ${p.filename}`)
+                    .join("\n")}`,
+            });
+            renderer.root.add(pagesBox);
 
-        const plan: DocType = {
-            totalPages: llmResponse.totalPages,
-            structure: llmResponse.structure,
-            pages: llmResponse.pages.map((p: typeof llmResponse.pages[number]) => ({
-                filename: p.filename,
-                title: p.title,
-                description: p.description,
-                sections: p.sections,
-                estimatedLength: p.estimatedLength,
-                path: p.path
-            }))
-        };
+            const uniqueDir = await step("saving mdx files...", () =>
+                scaffoldDocs(singlePages, "en")
+            );
 
-        const singlePages = await step(
-            "writing english docs...",
-            () => generatePages(repoSummary, plan)
-        );
+            await step("translating with lingo.dev...", () =>
+                runLingoTranslations({ targets: ["es", "fr", "de", "ja", "hi"] }, uniqueDir)
+            );
 
-        console.log(`\n📄 generated ${singlePages.pages.length} pages:`);
-        singlePages.pages.forEach(p => console.log(`  - ${p.filename}`));
-
-
-        /* ---------- write mdx ---------- */
-        const uniqueDir = await step(
-            "saving mdx files...",
-            () => scaffoldDocs(singlePages, "en")
-        );
-
-
-        /* ---------- tranlate using lingo-cli ---------- */
-        await step(
-            "translating with lingo.dev...",
-            () =>
-                runLingoTranslations(
-                    { targets: ["es", "fr", "de", "ja", "hi"] },
-                    uniqueDir
-                )
-        );
-
-        console.log(`
-            ${chalk.green("✔ documentation generated")}
-            ${chalk.gray("location:")} ${uniqueDir}
-            ${chalk.gray("languages:")} en, es, fr, de, ja, hi
-            `);
-
-
-
+            const finalStatus = new TextRenderable(renderer, {
+                id: "final-status",
+                content: t`
+✔ documentation generated
+location: ${uniqueDir}
+languages: en, es, fr, de, ja, hi
+`,
+            });
+            renderer.root.add(finalStatus);
+        });
     } catch (err: any) {
-        console.log(`
-            ${chalk.red("✖ documentation generation failed")}
-            ${chalk.gray("reason:")} ${err?.message || "unknown error"}
-            `);
+        const errorStatus = new TextRenderable(renderer, {
+            id: "error-status",
+            content: t`
+✖ documentation generation failed
+reason: ${err?.message || "unknown error"}
+`,
+        });
+        renderer.root.add(errorStatus);
         process.exit(1);
-
     }
 }
