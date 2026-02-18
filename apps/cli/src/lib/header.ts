@@ -1,33 +1,26 @@
-import { TextRenderable, Box, t, fg, CliRenderer } from "@opentui/core";
-
-const LOGO_LINES = [
-    '██████╗   ██████╗   ██████╗ ███████╗ ██╗  ██╗ ██╗   ██╗ ██████╗ ',
-    '██╔══██╗ ██╔═══██╗ ██╔════╝ ██╔════╝ ██║  ██║ ██║   ██║ ██╔══██╗',
-    '██║  ██║ ██║   ██║ ██║      ███████╗ ███████║ ██║   ██║ ██████╔╝',
-    '██║  ██║ ██║   ██║ ██║      ╚════██║ ██╔══██║ ██║   ██║ ██╔══██╗',
-    '██████╔╝ ╚██████╔╝ ╚██████╗ ███████║ ██║  ██║ ╚██████╔╝ ██████╔╝',
-    '╚═════╝   ╚═════╝   ╚═════╝ ╚══════╝ ╚═╝  ╚═╝  ╚═════╝  ╚═════╝ ',
-];
-
-// 256-color middle grays - visible on both light and dark backgrounds 
-const GRAYS = ['\x1b[38;5;250m',
-    '\x1b[38;5;248m',
-    '\x1b[38;5;245m',
-    '\x1b[38;5;243m',
-    '\x1b[38;5;240m',
-    '\x1b[38;5;238m',];
+import { TextRenderable, t, fg, CliRenderer } from "@opentui/core";
+import { Box, ASCIIFont, Text, createCliRenderer } from "@opentui/core"
 
 export function renderCliHeader(renderer: CliRenderer) {
-    const headerBox = Box(
-        { flexDirection: "column", paddingTop: 1, paddingBottom: 1 },
-        ...LOGO_LINES.map((line, i) => {
-            const color: string = GRAYS[i]! ?? GRAYS[0]; // cast to string
-            return new TextRenderable(renderer, {
-                id: `header-line-${i}`,
-                content: t`${fg(color)(line)}`,
-            });
+    const header = Box(
+        {
+            width: "100%",
+            flexDirection: "column",
+            alignItems: "center",
+            paddingTop: 2,
+            paddingBottom: 2,
+        },
+        ASCIIFont({
+            text: "DOCSHUB",
+            font: "block",
+            color: "#F7F7F7",
+        }),
+        Text({
+            marginTop: 1,
+            content: "CLI tool that generates documentation from github readmes",
+            fg: "#EEEEEE",
         })
-    );
+    )
 
-    renderer.root.add(headerBox);
+    renderer.root.add(header);
 }
