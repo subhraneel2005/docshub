@@ -7,7 +7,8 @@ import figlet from "figlet";
 import { login } from "./commands/login";
 import { fetchRepoFlow } from "./commands/generate";
 import { renderCliHeader } from "./lib/header";
-import { createCliRenderer } from "@opentui/core";
+import { CliRenderer, createCliRenderer } from "@opentui/core";
+import { renderFeatures } from "./lib/features";
 
 
 
@@ -17,8 +18,13 @@ let ghToken = "";
 const renderer = await createCliRenderer({ targetFps: 30, exitOnCtrlC: true, });
 
 
-function showHeader() {
+function showHome() {
     renderCliHeader(renderer);
+    renderFeatures(renderer)
+}
+
+export function clearScreen(renderer: CliRenderer) {
+    renderer.destroy()
 }
 
 function setupExitHandlers() {
@@ -34,28 +40,28 @@ function setupExitHandlers() {
 setupExitHandlers();
 
 
-program
-    .name("docshub")
-    .description("generate docs from readme")
-    .hook("preAction", () => {
-        showHeader();
-    });
+// program
+//     .name("docshub")
+//     .description("generate docs from readme")
 
-program
-    .command("login")
-    .description("login with github")
-    .action(async () => {
-        ghToken = await login(renderer);
-    });
+// program
+//     .command("login")
+//     .description("login with github")
+//     .action(async () => {
+//         ghToken = await login(renderer);
+//     });
 
-program
-    .command("init")
-    .description("get repo metadata and readme content")
-    .action(async () => {
-        if (!ghToken) {
-            ghToken = await login(renderer);
-        }
-        await fetchRepoFlow(ghToken, renderer);
-    });
+// program
+//     .command("init")
+//     .description("get repo metadata and readme content")
+//     .action(async () => {
+//         if (!ghToken) {
+//             ghToken = await login(renderer);
+//         }
+//         await fetchRepoFlow(ghToken, renderer);
+//     });
 
-program.parse();
+// program.parse();
+
+showHome();
+renderer.start()

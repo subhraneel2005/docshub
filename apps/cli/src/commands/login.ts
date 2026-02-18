@@ -14,7 +14,7 @@ import {
     Text,
 } from "@opentui/core";
 
-const C = {
+export const C = {
     primary: "#F7F7F7",
     secondary: "#EEEEEE",
     success: "#08CB00",
@@ -40,10 +40,10 @@ export async function login(renderer: CliRenderer) {
     const card = Box(
         {
             width: "100%",
-            flexGrow: 1,
+            height: "100%",
             flexDirection: "column",
             alignItems: "center",
-            justifyContent: "flex-start",
+            justifyContent: "center",
             paddingTop: 3,
         },
         Box(
