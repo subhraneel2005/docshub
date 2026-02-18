@@ -4,18 +4,71 @@ config({ path: resolve(process.cwd(), ".env"), quiet: true });
 
 import { createOAuthDeviceAuth } from "@octokit/auth-oauth-device";
 import { CONFIG } from "@repo/core/config/env";
-import { createCliRenderer, TextRenderable, t, fg, bold, underline, CliRenderer } from "@opentui/core";
+import {
+    createCliRenderer,
+    TextRenderable,
+    BoxRenderable,
+    t, fg, bold, underline,
+    CliRenderer,
+    Box,
+    Text,
+} from "@opentui/core";
+
+const C = {
+    primary: "#F7F7F7",
+    secondary: "#EEEEEE",
+    success: "#08CB00",
+    error: "#FF1E00",
+};
 
 export async function login(renderer: CliRenderer) {
-
     const statusText = new TextRenderable(renderer, {
         id: "status",
-        content: t`${fg("#00FFFF")("starting github device auth...")}`, // cyan
+        content: t`${fg(C.secondary)("starting github device auth...")}`,
     });
-    renderer.root.add(statusText);
+
+    const infoText = new TextRenderable(renderer, {
+        id: "info",
+        content: t``,
+    });
+
+    const finalText = new TextRenderable(renderer, {
+        id: "final",
+        content: t``,
+    });
+
+    const card = Box(
+        {
+            width: "100%",
+            flexGrow: 1,
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "flex-start",
+            paddingTop: 3,
+        },
+        Box(
+            {
+                flexDirection: "column",
+                alignItems: "center",
+                borderStyle: "rounded",
+                borderColor: C.secondary,
+                padding: 2,
+                gap: 1,
+            },
+            Text({
+                content: t`${bold(fg(C.primary)("  GitHub Authentication  "))}`,
+            }),
+            statusText,
+            infoText,
+            finalText,
+        )
+    );
+
+    renderer.root.add(card);
+    renderer.start();
 
     process.on("SIGINT", () => {
-        statusText.content = t`${fg("#FF0000")("✖ cancelled by user")}`; // red
+        statusText.content = t`${fg(C.error)("✖ cancelled by user")}`;
         renderer.start();
         process.exit(0);
     });
@@ -24,17 +77,12 @@ export async function login(renderer: CliRenderer) {
         clientId: CONFIG.GITHUB_OAUTH_CLIENT_ID,
         scopes: ["repo", "read:user"],
         onVerification: ({ verification_uri, user_code }) => {
-            statusText.content = t`${fg("#00FF00")(bold("github login required"))}`; // green
-            renderer.start();
+            statusText.content = t`${fg(C.success)(bold("github login required"))}`;
 
-            const infoBox = new TextRenderable(renderer, {
-                id: "info",
-                content: t`${fg("#888888")("open: ")}${underline(verification_uri)}
-${fg("#888888")("code: ")}${fg("#FFFF00")(user_code)}`, // yellow code
-            });
-            renderer.root.add(infoBox);
+            infoText.content = t`${fg(C.secondary)("open: ")}${fg(C.primary)(underline(verification_uri))}
+${fg(C.secondary)("code: ")}${fg(C.primary)(bold(user_code))}`;
 
-            statusText.content = t`${fg("#00FFFF")("waiting for authentication...")}`;
+            statusText.content = t`${fg(C.secondary)("waiting for authentication...")}`;
             renderer.start();
         },
     });
@@ -42,22 +90,17 @@ ${fg("#888888")("code: ")}${fg("#FFFF00")(user_code)}`, // yellow code
     try {
         const result = await auth({ type: "oauth" });
 
-        statusText.content = t`${fg("#00FF00")("✔ authentication complete")}`;
-        renderer.start();
+        statusText.content = t`${fg(C.success)(bold("✔ authentication complete"))}`;
 
-        const finalStatus = new TextRenderable(renderer, {
-            id: "final",
-            content: t`
-${fg("#00FF00")("✔ github connected")}
-${fg("#888888")("status:")} ready
-`,
-        });
-        renderer.root.add(finalStatus);
+        finalText.content = t`
+${fg(C.success)("✔ github connected")}
+${fg(C.secondary)("status:")} ${fg(C.primary)("ready")}
+`;
         renderer.start();
 
         return result.token;
     } catch (err: any) {
-        statusText.content = t`${fg("#FF0000")("authentication failed")}`;
+        statusText.content = t`${fg(C.error)("✖ authentication failed")}`;
         renderer.start();
         throw err;
     }
