@@ -13,13 +13,8 @@ import {
     Box,
     Text,
 } from "@opentui/core";
+import { C } from "../constants/colors";
 
-export const C = {
-    primary: "#F7F7F7",
-    secondary: "#EEEEEE",
-    success: "#08CB00",
-    error: "#FF1E00",
-};
 
 export async function login(renderer: CliRenderer) {
     const statusText = new TextRenderable(renderer, {

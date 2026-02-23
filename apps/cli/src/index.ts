@@ -39,29 +39,5 @@ function setupExitHandlers() {
 
 setupExitHandlers();
 
-
-// program
-//     .name("docshub")
-//     .description("generate docs from readme")
-
-// program
-//     .command("login")
-//     .description("login with github")
-//     .action(async () => {
-//         ghToken = await login(renderer);
-//     });
-
-// program
-//     .command("init")
-//     .description("get repo metadata and readme content")
-//     .action(async () => {
-//         if (!ghToken) {
-//             ghToken = await login(renderer);
-//         }
-//         await fetchRepoFlow(ghToken, renderer);
-//     });
-
-// program.parse();
-
 showHome();
 renderer.start()

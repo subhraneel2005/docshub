@@ -1,7 +1,8 @@
 import { bold, Box, fg, SelectRenderable, SelectRenderableEvents, t, Text, type CliRenderer } from "@opentui/core";
 import { clearScreen } from "..";
-import { C, login } from "../commands/login";
+import { login } from "../commands/login";
 import { fetchRepoFlow } from "../commands/generate";
+import { C } from "../constants/colors";
 
 let ghToken = ""
 export function renderFeatures(renderer: CliRenderer) {
