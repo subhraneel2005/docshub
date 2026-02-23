@@ -9,7 +9,6 @@ import { contentGenerator } from "@repo/core/actions/ai/content-generator";
 import { repoSummariser } from "@repo/core/actions/ai/repo-summarizer";
 import { generatePages } from "@repo/core/actions/ai/generate-single-pages";
 import { getTargetDir } from "../lib/get-target-dir";
-import { runLingoTranslations } from "../lib/run-lingo-translations";
 import { step } from "../lib/step";
 import type { DocType } from "@repo/core/schema/doc-plan";
 
@@ -113,16 +112,11 @@ export async function fetchRepoFlow(token: string, renderer: CliRenderer, cliArg
                 scaffoldDocs(singlePages, "en")
             );
 
-            await step("translating with lingo.dev...", () =>
-                runLingoTranslations({ targets: ["es", "fr", "de", "ja", "hi"] }, uniqueDir)
-            );
-
             const finalStatus = new TextRenderable(renderer, {
                 id: "final-status",
                 content: t`
 ✔ documentation generated
 location: ${uniqueDir}
-languages: en, es, fr, de, ja, hi
 `,
             });
             renderer.root.add(finalStatus);
