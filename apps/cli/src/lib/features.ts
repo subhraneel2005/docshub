@@ -65,6 +65,7 @@ export function renderFeatures(renderer: CliRenderer) {
             if (!ghToken) {
                 await login(renderer);
                 await fetchRepoFlow(ghToken!, renderer);
+                return;
             }
             await fetchRepoFlow(ghToken!, renderer);
         }
