@@ -8,7 +8,6 @@ import { printRepoTree } from "../lib/print-repo-tree";
 import { contentGenerator } from "@repo/core/actions/ai/content-generator";
 import { repoSummariser } from "@repo/core/actions/ai/repo-summarizer";
 import { generatePages } from "@repo/core/actions/ai/generate-single-pages";
-import { getTargetDir } from "../lib/get-target-dir";
 import { step } from "../lib/step";
 import type { DocType } from "@repo/core/schema/doc-plan";
 
