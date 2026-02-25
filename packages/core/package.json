@@ -7,7 +7,8 @@
     "./*": "./dist/*.js"
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc -p tsconfig.build.json",
+    "test": "node dist/scripts/s1.js"
   },
   "keywords": [],
   "author": "",
@@ -27,6 +28,7 @@
     "mdast-util-to-string": "^4.0.0",
     "remark-gfm": "^4.0.1",
     "remark-parse": "^11.0.0",
+    "tsx": "^4.21.0",
     "unified": "^11.0.5",
     "zod": "^4.3.6"
   },

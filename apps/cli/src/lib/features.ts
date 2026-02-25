@@ -3,8 +3,8 @@ import { clearScreen } from "..";
 import { login } from "../commands/login";
 import { fetchRepoFlow } from "../commands/generate";
 import { C } from "../constants/colors";
+import { getAccessToken } from "../store/config.store";
 
-let ghToken = ""
 export function renderFeatures(renderer: CliRenderer) {
     const menu = new SelectRenderable(renderer, {
         id: "menu",
@@ -24,7 +24,7 @@ export function renderFeatures(renderer: CliRenderer) {
         alignItems: "flex-start",
         itemSpacing: 1,
         showScrollIndicator: true,
-        marginTop: 2
+        marginTop: 1
     });
 
     const container = Box(
@@ -57,14 +57,17 @@ export function renderFeatures(renderer: CliRenderer) {
     );
 
     menu.on(SelectRenderableEvents.ITEM_SELECTED, async (_index, option) => {
-        // clearScreen(renderer);
+
+        const ghToken = getAccessToken()
 
         if (option.value === "init") {
             renderer.root.remove("menu-container")
             if (!ghToken) {
-                ghToken = await login(renderer);
-                await fetchRepoFlow(ghToken, renderer);
+                await login(renderer);
+                await fetchRepoFlow(ghToken!, renderer);
+                return;
             }
+            await fetchRepoFlow(ghToken!, renderer);
         }
 
         if (option.value === "exit") {

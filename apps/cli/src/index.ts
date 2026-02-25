@@ -10,11 +10,6 @@ import { renderCliHeader } from "./lib/header";
 import { CliRenderer, createCliRenderer } from "@opentui/core";
 import { renderFeatures } from "./lib/features";
 
-
-
-const program = new Command();
-let ghToken = "";
-
 const renderer = await createCliRenderer({ targetFps: 30, exitOnCtrlC: true, });
 
 

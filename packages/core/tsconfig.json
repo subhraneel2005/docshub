@@ -8,6 +8,5 @@
     },
     "include": [
         "**/*.ts",
-        // "../../apps/cli/src/lib/create-nextra-app.ts"
     ]
 }

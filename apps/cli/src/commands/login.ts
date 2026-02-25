@@ -5,15 +5,14 @@ config({ path: resolve(process.cwd(), ".env"), quiet: true });
 import { createOAuthDeviceAuth } from "@octokit/auth-oauth-device";
 import { CONFIG } from "@repo/core/config/env";
 import {
-    createCliRenderer,
     TextRenderable,
-    BoxRenderable,
     t, fg, bold, underline,
     CliRenderer,
     Box,
     Text,
 } from "@opentui/core";
 import { C } from "../constants/colors";
+import { setAccessToken } from "../store/config.store";
 
 
 export async function login(renderer: CliRenderer) {
@@ -34,6 +33,7 @@ export async function login(renderer: CliRenderer) {
 
     const card = Box(
         {
+            id: "login-container",
             width: "100%",
             height: "100%",
             flexDirection: "column",
@@ -93,6 +93,9 @@ ${fg(C.secondary)("status:")} ${fg(C.primary)("ready")}
 `;
         renderer.start();
 
+        setAccessToken(result.token)
+        renderer.root.remove("login-container")
+        renderer.start()
         return result.token;
     } catch (err: any) {
         statusText.content = t`${fg(C.error)("✖ authentication failed")}`;

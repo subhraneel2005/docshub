@@ -5,6 +5,7 @@ export function renderCliHeader(renderer: CliRenderer) {
     const header = Box(
         {
             width: "100%",
+            marginTop: 4,
             flexDirection: "column",
             alignItems: "center",
             paddingTop: 2,

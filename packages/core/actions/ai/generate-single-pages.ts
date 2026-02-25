@@ -1,17 +1,17 @@
 import { generateText, Output } from "ai";
-import { GeneratedPage, GeneratedPages, GeneratedPagesSchema, GeneratedPageSchema } from "../../schema/single-doc-page";
-import { DocType } from "../../schema/doc-plan";
-import { RepoSummary } from "../../schema/repo-summary";
+import { GeneratedPageSchema, type GeneratedPage, type GeneratedPages } from "../../schema/single-doc-page";
+import type { DocType } from "../../schema/doc-plan";
+import type { RepoSummary } from "../../schema/repo-summary";
 import { google } from "../../lib/google";
 
 export async function generatePages(summary: RepoSummary, plan: DocType): Promise<GeneratedPages> {
-    const generatedPages: GeneratedPage[] = [];
+  const generatedPages: GeneratedPage[] = [];
 
-    // ✅ Generate each page individually
-    for (const pageSpec of plan.pages) {
-        const { output } = await generateText({
-            model: google("gemini-2.5-flash"),
-            system: `you are a senior technical documentation writer.
+  // ✅ Generate each page individually
+  for (const pageSpec of plan.pages) {
+    const { output } = await generateText({
+      model: google("gemini-2.5-flash"),
+      system: `you are a senior technical documentation writer.
 
 OUTPUT STRICT VALID MDX:
 - markdown + JSX allowed
@@ -56,10 +56,10 @@ USE THESE COMPONENTS when they enhance clarity:
 - CodeBlockTabs for showing same code in multiple languages
 
 write like official developer docs: structured, technical, clear.`,
-            output: Output.object({
-                schema: GeneratedPageSchema  // ✅ Single page schema
-            }),
-            prompt: `
+      output: Output.object({
+        schema: GeneratedPageSchema  // ✅ Single page schema
+      }),
+      prompt: `
 REPOSITORY SUMMARY:
 ${JSON.stringify(summary)}
 
@@ -87,11 +87,11 @@ COMPONENT USAGE EXAMPLES:
 - Use <Cards> for navigation to related docs or feature highlights
 - Use <CodeBlockTabs> when showing multiple language/framework examples
 `
-        });
+    });
 
-        generatedPages.push(output as GeneratedPage);
-        console.log(`generated: ${pageSpec.filename}`);
-    }
+    generatedPages.push(output as GeneratedPage);
+    console.log(`generated: ${pageSpec.filename}`);
+  }
 
-    return { pages: generatedPages };
+  return { pages: generatedPages };
 }

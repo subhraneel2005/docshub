@@ -1,6 +1,6 @@
 import path from "path";
 import fs from "fs-extra";
-import { GeneratedPages } from "../../schema/single-doc-page";
+import type { GeneratedPages } from "../../schema/single-doc-page";
 import chalk from "chalk";
 
 export async function scaffoldDocs(docs: GeneratedPages, lang = "en") {
