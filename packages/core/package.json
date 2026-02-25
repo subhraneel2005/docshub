@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "test": "node dist/scripts/s1.js"
+    "test": "tsx __tests__/get-md-content.test.ts"
   },
   "keywords": [],
   "author": "",
