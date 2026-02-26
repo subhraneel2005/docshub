@@ -10,9 +10,10 @@ import { repoSummariser } from "@repo/core/actions/ai/repo-summarizer";
 import { generatePages } from "@repo/core/actions/ai/generate-single-pages";
 import { step } from "../lib/step";
 import type { DocType } from "@repo/core/schema/doc-plan";
-import { TextRenderable, InputRenderable, InputRenderableEvents, BoxRenderable, t, CliRenderer, Box, Text, bold, fg, dim } from "@opentui/core";
+import { TextRenderable, InputRenderable, InputRenderableEvents, BoxRenderable, t, CliRenderer, Box, Text, bold, fg, dim, TextAttributes } from "@opentui/core";
 import { scaffoldDocs } from "@repo/core/actions/scafold/write-files";
 import { C } from "../constants/colors";
+import { selectReadmeFiles } from "../lib/select-readme-files";
 
 const SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 
@@ -185,53 +186,68 @@ export async function fetchRepoFlow(token: string, renderer: CliRenderer, cliArg
     }));
 
     try {
-        startStep("fetching metadata + readmes");
-        const result = await getRepoReadme(token, owner, repo);
-        completeStep();
+        startStep("getting all readme files")
+        const selectedReadmeFiles = await selectReadmeFiles({ owner, repo, renderer, token, container: innerBox })
+        completeStep()
 
-        startStep("analyzing repository structure");
-        const structure = await fetchRepoStructure(token, owner, repo);
-        completeStep();
+        selectedReadmeFiles.forEach((file, i) => {
+            const styledText = new TextRenderable(renderer, {
+                id: `selected-${i}`,
+                content: `Selected: ${file.path}`,
+                fg: C.primary,
+                attributes: TextAttributes.BOLD,
+            });
 
-        const repoData = {
-            name: result.metadata.name?.toString() ?? "",
-            description: result.metadata.descriptions?.toString() ?? "",
-            language: result.metadata.language?.toString() ?? "",
-            topics: result.metadata.topics ?? [],
-            readme: result.readme?.toString() ?? "",
-            structure: printRepoTree(structure) ?? "",
-        };
+            stepsBox.add(styledText);
+        });
 
-        startStep("generating documentation plan");
-        const llmResponse = await contentGenerator(repoData);
-        completeStep();
+        // startStep("fetching metadata + readmes");
+        // const result = await getRepoReadme(token, owner, repo);
+        // completeStep();
 
-        startStep("summarising repository");
-        const repoSummary = await repoSummariser(repoData);
-        completeStep();
+        // startStep("analyzing repository structure");
+        // const structure = await fetchRepoStructure(token, owner, repo);
+        // completeStep();
 
-        const plan: DocType = {
-            totalPages: llmResponse.totalPages,
-            structure: llmResponse.structure,
-            pages: llmResponse.pages.map((p: any) => ({
-                filename: p.filename,
-                title: p.title,
-                description: p.description,
-                sections: p.sections,
-                estimatedLength: p.estimatedLength,
-                path: p.path,
-            })),
-        };
+        // const repoData = {
+        //     name: result.metadata.name?.toString() ?? "",
+        //     description: result.metadata.descriptions?.toString() ?? "",
+        //     language: result.metadata.language?.toString() ?? "",
+        //     topics: result.metadata.topics ?? [],
+        //     readme: result.readme?.toString() ?? "",
+        //     structure: printRepoTree(structure) ?? "",
+        // };
 
-        startStep("writing documentation pages");
-        const singlePages = await generatePages(repoSummary, plan);
-        completeStep();
+        // startStep("generating documentation plan");
+        // const llmResponse = await contentGenerator(repoData);
+        // completeStep();
 
-        startStep("saving mdx files");
-        const uniqueDir = await scaffoldDocs(singlePages, "en");
-        completeStep();
+        // startStep("summarising repository");
+        // const repoSummary = await repoSummariser(repoData);
+        // completeStep();
 
-        finalText.content = t`${fg(C.success)(bold("✔ documentation ready!"))}\nsaved to: ${fg(C.primary)(uniqueDir)}\n${singlePages.pages.length} pages generated`;
+        // const plan: DocType = {
+        //     totalPages: llmResponse.totalPages,
+        //     structure: llmResponse.structure,
+        //     pages: llmResponse.pages.map((p: any) => ({
+        //         filename: p.filename,
+        //         title: p.title,
+        //         description: p.description,
+        //         sections: p.sections,
+        //         estimatedLength: p.estimatedLength,
+        //         path: p.path,
+        //     })),
+        // };
+
+        // startStep("writing documentation pages");
+        // const singlePages = await generatePages(repoSummary, plan);
+        // completeStep();
+
+        // startStep("saving mdx files");
+        // const uniqueDir = await scaffoldDocs(singlePages, "en");
+        // completeStep();
+
+        // finalText.content = t`${fg(C.success)(bold("✔ documentation ready!"))}\nsaved to: ${fg(C.primary)(uniqueDir)}\n${singlePages.pages.length} pages generated`;
 
     } catch (err: any) {
         completeStep(true);
