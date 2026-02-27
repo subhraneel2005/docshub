@@ -4,8 +4,8 @@ import {
     SelectRenderable,
     SelectRenderableEvents,
 } from "@opentui/core";
+import { getAllReadmes } from "@subhraneel2005/docshub-core/actions/github/get-all-readme-files";
 
-import { getAllReadmes } from "@repo/core/actions/github/get-all-readme-files";
 
 interface SelectReadmeFilesProps {
     token: string;

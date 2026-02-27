@@ -3,7 +3,7 @@ import { resolve } from "path";
 config({ path: resolve(process.cwd(), ".env"), quiet: true });
 
 import { createOAuthDeviceAuth } from "@octokit/auth-oauth-device";
-import { CONFIG } from "@repo/core/config/env";
+
 import {
   TextRenderable,
   InputRenderable,
@@ -20,6 +20,7 @@ import {
 } from "@opentui/core";
 import { C } from "../constants/colors";
 import { setAccessToken, setGeminiApiKey } from "../store/config.store";
+import { CONFIG } from "@subhraneel2005/docshub-core/config/env";
 
 export async function login(renderer: CliRenderer) {
   const headerText = new TextRenderable(renderer, {

@@ -2,21 +2,21 @@ import { config } from "dotenv";
 import { resolve } from "path";
 config({ path: resolve(process.cwd(), ".env"), quiet: true });
 
-import { getRepoReadme } from "@repo/core/actions/github/get-repo-readme";
-import { fetchRepoStructure } from "@repo/core/actions/github/fetch-file-tree";
 import { printRepoTree } from "../lib/print-repo-tree";
-import { contentGenerator } from "@repo/core/actions/ai/content-generator";
-import { repoSummariser } from "@repo/core/actions/ai/repo-summarizer";
-import { generatePages } from "@repo/core/actions/ai/generate-single-pages";
-import { step } from "../lib/step";
-import type { DocType } from "@repo/core/schema/doc-plan";
+
 import { TextRenderable, InputRenderable, InputRenderableEvents, BoxRenderable, t, CliRenderer, Box, Text, bold, fg, dim, TextAttributes } from "@opentui/core";
-import { scaffoldDocs } from "@repo/core/actions/scafold/write-files";
+
 import { C } from "../constants/colors";
 import { selectReadmeFiles } from "../lib/select-readme-files";
-import { getMdContent } from "@repo/core/actions/github/get-md-content";
-import { renderMarkdown } from "../lib/render-markdwon";
-import { getAllReadmes } from "@repo/core/actions/github/get-all-readme-files";
+import { getMdContent } from "@subhraneel2005/docshub-core/actions/github/get-md-content";
+import { fetchRepoStructure } from "@subhraneel2005/docshub-core/actions/github/fetch-file-tree";
+import { getAllReadmes } from "@subhraneel2005/docshub-core/actions/github/get-all-readme-files";
+import { contentGenerator } from "@subhraneel2005/docshub-core/actions/ai/content-generator";
+import { repoSummariser } from "@subhraneel2005/docshub-core/actions/ai/repo-summarizer";
+import type { DocType } from "@subhraneel2005/docshub-core/schema/doc-plan";
+import { generatePages } from "@subhraneel2005/docshub-core/actions/ai/generate-single-pages";
+import { scaffoldDocs } from "@subhraneel2005/docshub-core/actions/scafold/write-files";
+
 
 const SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 

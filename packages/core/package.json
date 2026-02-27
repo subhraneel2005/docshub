@@ -1,8 +1,9 @@
 {
-  "name": "@repo/core",
-  "version": "1.0.0",
+  "name": "@subhraneel2005/docshub-core",
+  "version": "1.0.1",
   "description": "",
   "main": "dist/index.js",
+  "files": ["dist"],
   "exports": {
     "./*": "./dist/*.js"
   },

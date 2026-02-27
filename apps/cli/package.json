@@ -1,7 +1,8 @@
 {
-  "name": "@docshub/cli",
-  "version": "1.0.1",
+  "name": "@subhraneel2005/docshub",
+  "version": "1.0.0",
   "description": "",
+  "files": ["dist"],
   "bin": {
     "docshub": "./dist/index.js"
   },
@@ -16,7 +17,7 @@
   "dependencies": {
     "@octokit/auth-oauth-device": "^8.0.3",
     "@opentui/core": "^0.1.77",
-    "@repo/core": "workspace:*",
+    "@subhraneel2005/docshub-core": "1.0.1",
     "@repo/typescript-config": "workspace:*",
     "boxen": "^8.0.1",
     "chalk": "^5.6.2",

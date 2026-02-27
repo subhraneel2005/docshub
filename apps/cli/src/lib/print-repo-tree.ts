@@ -1,4 +1,5 @@
-import type { RepoFile } from "@repo/core/actions/github/fetch-file-tree";
+import type { RepoFile } from "@subhraneel2005/docshub-core/actions/github/fetch-file-tree";
+
 
 export function printRepoTree(structure: RepoFile[], indent = ""): string {
     let output = "";
