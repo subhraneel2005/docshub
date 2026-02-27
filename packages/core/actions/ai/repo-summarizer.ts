@@ -8,11 +8,20 @@ type RepoData = {
     description: string;
     language: string;
     topics: string[];
-    readme: string;
+    readmes: Record<string, string>;
     structure: string;
 };
 
+
+
 export async function repoSummariser(repo: RepoData) {
+
+    const compiledReadmes = Object.entries(repo.readmes)
+        .map(([path, content]) => {
+            return `FILE: ${path}\n${content.slice(0, 8000)}`
+        })
+        .join("\n\n---\n\n");
+
     const { text } = await generateText({
         model: google("gemini-2.5-flash"),
         system: `you are a senior software architect.
@@ -28,8 +37,8 @@ export async function repoSummariser(repo: RepoData) {
   language: ${repo.language}
   topics: ${repo.topics.join(", ")}
   
-  README:
-  ${repo.readme.slice(0, 12000)}
+  README FILES:
+  ${compiledReadmes}
   
   STRUCTURE:
   ${repo.structure}

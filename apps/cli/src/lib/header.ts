@@ -13,7 +13,7 @@ export function renderCliHeader(renderer: CliRenderer) {
         },
         ASCIIFont({
             text: "DOCSHUB",
-            font: "block",
+            font: "tiny",
             color: "#F7F7F7",
         }),
         Text({

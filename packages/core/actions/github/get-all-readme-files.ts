@@ -1,4 +1,5 @@
 import { createOctokit } from "../../github/octokit"
+import { type SelectedMdFiles } from "../../schema/selected-md-files";
 
 
 export interface AllReadmeFilesResult {
@@ -15,7 +16,8 @@ export interface AllReadmeFilesResult {
         forksCount: number;
         defaultBranch: string;
     };
-    readmes: string[];
+    readmes: string[],
+    mdFiles: SelectedMdFiles
 }
 
 export async function getAllReadmes(
@@ -57,6 +59,12 @@ export async function getAllReadmes(
         )
         .map(item => item.path);
 
+    const mdFiles: SelectedMdFiles = mdFilePaths.map((path) => ({
+        path,
+        name: path.replace(/\.(md|mdx)$/i, ""),
+        isSelected: false
+    }))
+
     const repoMetadata = {
         name: repoData.data.full_name,
         gitUrl: repoData.data.git_url,
@@ -71,11 +79,9 @@ export async function getAllReadmes(
         defaultBranch: repoData.data.default_branch,
     };
 
-
-
-
     return {
         metadata: repoMetadata,
         readmes: mdFilePaths,
+        mdFiles
     };
 }

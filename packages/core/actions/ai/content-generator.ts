@@ -5,14 +5,14 @@ import { SYSTEM_PROMPT } from '../../prompts/system-prompt';
 import { DocPlanSchema } from "../../schema/doc-plan";
 import { google } from "../../lib/google";
 
+
 type RepoData = {
     name: string;
     description: string;
     language: string;
     topics: string[];
-    readme: string;
+    readmes: Record<string, string>;
     structure: string;
-    // dependencies: string[];
 };
 
 export async function contentGenerator(repo: RepoData) {
@@ -22,7 +22,12 @@ export async function contentGenerator(repo: RepoData) {
             .replace("{description}", repo.description)
             .replace("{language}", repo.language)
             .replace("{topics}", repo.topics.join(", "))
-            .replace("{readme}", repo.readme)
+            .replace(
+                "{readme}",
+                Object.entries(repo.readmes)
+                    .map(([path, content]) => `# ${path}\n\n${content}`)
+                    .join("\n\n---\n\n")
+            )
             .replace("{structure}", repo.structure);
 
         const { text } = await generateText({

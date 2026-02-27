@@ -14,6 +14,9 @@ import { TextRenderable, InputRenderable, InputRenderableEvents, BoxRenderable, 
 import { scaffoldDocs } from "@repo/core/actions/scafold/write-files";
 import { C } from "../constants/colors";
 import { selectReadmeFiles } from "../lib/select-readme-files";
+import { getMdContent } from "@repo/core/actions/github/get-md-content";
+import { renderMarkdown } from "../lib/render-markdwon";
+import { getAllReadmes } from "@repo/core/actions/github/get-all-readme-files";
 
 const SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 
@@ -201,53 +204,72 @@ export async function fetchRepoFlow(token: string, renderer: CliRenderer, cliArg
             stepsBox.add(styledText);
         });
 
-        // startStep("fetching metadata + readmes");
-        // const result = await getRepoReadme(token, owner, repo);
-        // completeStep();
+        const readmes: Record<string, string> = {};
 
-        // startStep("analyzing repository structure");
-        // const structure = await fetchRepoStructure(token, owner, repo);
-        // completeStep();
+        for (let i = 0; i < selectedReadmeFiles.length; i++) {
+            let file = selectedReadmeFiles[i];
 
-        // const repoData = {
-        //     name: result.metadata.name?.toString() ?? "",
-        //     description: result.metadata.descriptions?.toString() ?? "",
-        //     language: result.metadata.language?.toString() ?? "",
-        //     topics: result.metadata.topics ?? [],
-        //     readme: result.readme?.toString() ?? "",
-        //     structure: printRepoTree(structure) ?? "",
-        // };
+            startStep(`extracting ${file?.path}`);
 
-        // startStep("generating documentation plan");
-        // const llmResponse = await contentGenerator(repoData);
-        // completeStep();
+            const result = await getMdContent({
+                owner,
+                path: file?.path!,
+                repo,
+                token
+            });
 
-        // startStep("summarising repository");
-        // const repoSummary = await repoSummariser(repoData);
-        // completeStep();
+            if (result) {
+                readmes[file!.path] = result;
+            }
 
-        // const plan: DocType = {
-        //     totalPages: llmResponse.totalPages,
-        //     structure: llmResponse.structure,
-        //     pages: llmResponse.pages.map((p: any) => ({
-        //         filename: p.filename,
-        //         title: p.title,
-        //         description: p.description,
-        //         sections: p.sections,
-        //         estimatedLength: p.estimatedLength,
-        //         path: p.path,
-        //     })),
-        // };
+            completeStep();
+        }
 
-        // startStep("writing documentation pages");
-        // const singlePages = await generatePages(repoSummary, plan);
-        // completeStep();
+        startStep("analyzing repository structure");
+        const structure = await fetchRepoStructure(token, owner, repo);
+        const Rdata = await getAllReadmes(token, owner, repo);
+        const { metadata } = Rdata;
+        completeStep();
 
-        // startStep("saving mdx files");
-        // const uniqueDir = await scaffoldDocs(singlePages, "en");
-        // completeStep();
+        const repoData = {
+            name: metadata.name?.toString() ?? "",
+            description: metadata.descriptions?.toString() ?? "",
+            language: metadata.language?.toString() ?? "",
+            topics: metadata.topics ?? [],
+            readmes,
+            structure: printRepoTree(structure) ?? "",
+        };
 
-        // finalText.content = t`${fg(C.success)(bold("✔ documentation ready!"))}\nsaved to: ${fg(C.primary)(uniqueDir)}\n${singlePages.pages.length} pages generated`;
+        startStep("generating documentation plan");
+        const llmResponse = await contentGenerator(repoData);
+        completeStep();
+
+        startStep("summarising repository");
+        const repoSummary = await repoSummariser(repoData);
+        completeStep();
+
+        const plan: DocType = {
+            totalPages: llmResponse.totalPages,
+            structure: llmResponse.structure,
+            pages: llmResponse.pages.map((p: any) => ({
+                filename: p.filename,
+                title: p.title,
+                description: p.description,
+                sections: p.sections,
+                estimatedLength: p.estimatedLength,
+                path: p.path,
+            })),
+        };
+
+        startStep("writing documentation pages");
+        const singlePages = await generatePages(repoSummary, plan);
+        completeStep();
+
+        startStep("saving mdx files");
+        const uniqueDir = await scaffoldDocs(singlePages, "en");
+        completeStep();
+
+        finalText.content = t`${fg(C.success)(bold("✔ documentation ready!"))}\nsaved to: ${fg(C.primary)(uniqueDir)}\n${singlePages.pages.length} pages generated`;
 
     } catch (err: any) {
         completeStep(true);
