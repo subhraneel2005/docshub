@@ -12,7 +12,7 @@ import { clearScreen } from "..";
 import { login } from "../commands/login";
 import { fetchRepoFlow } from "../commands/generate";
 import { C } from "../constants/colors";
-import { getAccessToken } from "../store/config.store";
+import { getAccessToken, clearAccessToken } from "../store/config.store";
 
 export function renderFeatures(renderer: CliRenderer) {
   const menu = new SelectRenderable(renderer, {
@@ -25,7 +25,7 @@ export function renderFeatures(renderer: CliRenderer) {
         description: "Generate a new docs site",
         value: "init",
       },
-      { name: "Whoami", description: "Get your details", value: "whoami" },
+      // { name: "Whoami", description: "Get your details", value: "whoami" },
       {
         name: "Logout",
         description: "Logout of your session",
@@ -88,6 +88,17 @@ export function renderFeatures(renderer: CliRenderer) {
 
     if (option.value === "exit") {
       process.exit(0);
+    }
+
+    if (option.value === "logout") {
+      clearAccessToken();
+      clearScreen(renderer);
+      Text({
+        content: t`${fg(C.primary)("You have been logged out.")}`,
+      });
+      setTimeout(() => {
+        process.exit(0);
+      }, 1000);
     }
   });
 

@@ -58,4 +58,16 @@ function getGeminiApiKey(): string | undefined {
   return config.geminiApiKey;
 }
 
-export { setAccessToken, getAccessToken, setGeminiApiKey, getGeminiApiKey };
+function clearAccessToken() {
+  const config = readConfig();
+  delete config.accessToken;
+  writeConfig(config);
+}
+
+export {
+  setAccessToken,
+  getAccessToken,
+  setGeminiApiKey,
+  getGeminiApiKey,
+  clearAccessToken,
+};
