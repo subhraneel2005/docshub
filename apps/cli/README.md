@@ -1,5 +1,10 @@
 # Docshub
 
+[![npm version](https://img.shields.io/npm/v/@subhraneel2005/docshub)](https://www.npmjs.com/package/@subhraneel2005/docshub)
+[![npm downloads](https://img.shields.io/npm/dm/@subhraneel2005/docshub)](https://www.npmjs.com/package/@subhraneel2005/docshub)
+[![License](https://img.shields.io/npm/l/@subhraneel2005/docshub)](LICENSE)
+[![GitHub issues](https://img.shields.io/github/issues/subhraneel2005/docshub)](https://github.com/subhraneel2005/docshub/issues)
+
 A CLI tool that converts GitHub repositories into clean documentation using AI. Select any MD/MDX files from a repo and generate well-structured docs with a single command.
 
 ## What it does

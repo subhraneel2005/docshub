@@ -1,101 +1,80 @@
 # Docshub
 
-A CLI-first tool that converts GitHub repositories into clean, searchable documentation sites using AI-powered analysis and MDX generation.
+[![npm version](https://img.shields.io/npm/v/@subhraneel2005/docshub)](https://www.npmjs.com/package/@subhraneel2005/docshub)
+[![npm downloads](https://img.shields.io/npm/dm/@subhraneel2005/docshub)](https://www.npmjs.com/package/@subhraneel2005/docshub)
+[![License](https://img.shields.io/npm/l/@subhraneel2005/docshub)](LICENSE)
+[![GitHub issues](https://img.shields.io/github/issues/subhraneel2005/docshub)](https://github.com/subhraneel2005/docshub/issues)
+
+A CLI tool that converts GitHub repositories into clean documentation using AI. Select any MD/MDX files from a repo and generate well-structured docs with a single command.
 
 ## What it does
 
-Docshub takes any GitHub repository and automatically generates a full documentation site from its READMEs and code structure. It uses AI to understand the repository and create well-organized, navigable MDX pages.
+Docshub pulls specific MD/MDX files from any GitHub repository, sends them to an AI model, and generates organized documentation ready for your docs site.
 
-## Quick Start
+## Installation
 
 ```bash
-# Clone and install
-git clone https://github.com/your-repo/docshub.git
-cd docshub
-pnpm install
+# Install globally
+npm install -g docshub
 
-# Login with GitHub token
-docshub login
-
-# Generate docs for a repository
-docshub generate
+# Or run directly
+npx docshub
 ```
 
-You'll be prompted for:
+## Usage
 
-1. GitHub username/organization
-2. Repository name
+```bash
+docshub
+```
 
-The CLI will fetch all README files, analyze the repository structure, and generate MDX documentation in `~/Desktop/docs-{timestamp}/en`.
+The CLI guides you through each step:
+
+1. **Login** — If first time or logged out, authenticate via GitHub device flow (enter the code at github.com/device)
+2. **Gemini Key** — Optionally add your own Gemini API key for AI processing (skippable)
+3. **Repository** — Enter the org/username (e.g., `subhraneel2005`) and repo name (e.g., `my-repo`)
+4. **File Selection** — Browse and select which MD/MDX files to include
+5. **Generate** — AI analyzes your files, creates a doc plan, and writes generated content
 
 ## Output
 
-Generated docs include:
+Generated docs appear in:
 
-- Multiple MDX pages based on repository content
-- `_meta.json` for fumadocs navigation
-- Clean, editable markdown content
+```
+~/Desktop/docs-{timestamp}/
+```
+
+Each selected file gets AI-generated documentation. The output includes MDX files ready for any docs framework—fumadocs is supported out of the box.
 
 ## Creating a Docs Website
 
-The generated output is ready for [fumadocs](https://fumadocs.dev), a modern MDX documentation framework.
+The generated output works with [fumadocs](https://fumadocs.dev).
 
-### Option 1: Start Fresh
+### Option 1: Fresh fumadocs project
 
 ```bash
-# Create a new fumadocs project
 npx create-fumadocs@latest my-docs
-
-# Copy generated files
-cp -r ~/Desktop/docs-{timestamp}/en/* my-docs/content/
-
-# Start dev server
+cp -r ~/Desktop/docs-{timestamp}/* my-docs/content/
 cd my-docs
 pnpm dev
 ```
 
-### Option 2: Add to Existing Project
+### Option 2: Add to existing project
 
-If you already have a fumadocs project:
-
-1. Copy the generated MDX files to your content folder:
-
-   ```bash
-   cp -r ~/Desktop/docs-{timestamp}/en/* your-fumadocs-project/content/
-   ```
-
-2. The `_meta.json` file handles navigation structure
-
-3. Edit freely—MDX allows full React components in markdown
-
-### Fumadocs Features
-
-With fumadocs you get:
-
-- Full-text search
-- Dark/light theming
-- Custom components in MDX
-- Versioning support
-- Fast static generation
-
-## Project Structure
-
+```bash
+cp -r ~/Desktop/docs-{timestamp}/* your-fumadocs-project/content/
 ```
-docshub/
-├── apps/
-│   ├── cli/        # Main CLI application
-│   └── web/        # Web interface for browsing docs
-└── packages/
-    └── core/       # GitHub API, MDX generation, AI integration
-```
+
+## Configuration
+
+- **Token storage**: `~/.docshub/config.json` — contains your GitHub access token
+- **Gemini key**: Stored in the same config file (optional)
 
 ## Tech Stack
 
 - **Runtime**: Bun
 - **CLI UI**: OpenTUI
-- **AI**: Gemini 2.5 flash
-- **MDX**: Custom generation pipeline
-- **Web**: Next.js + Shadcn UI
+- **AI**: Gemini 2.5 Flash
+- **Output**: MDX
 
 ## License
 

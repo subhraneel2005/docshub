@@ -1,6 +1,6 @@
 {
   "name": "@subhraneel2005/docshub",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "",
   "files": ["dist" , "README.md"],
   "bin": {

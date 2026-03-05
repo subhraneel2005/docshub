@@ -89,7 +89,7 @@ export default function DocshubLanding() {
                 <section className="grid grid-cols-1 lg:grid-cols-12 gap-16 mb-40">
                     <div className="lg:col-span-7">
                         <Badge variant="outline" className="mb-6 rounded-none border-destructive/30 text-destructive bg-destructive/5 px-3 py-1 uppercase tracking-widest text-[10px]">
-                            Engine Active: v1.0.4
+                            Engine Active: v1.0.9
                         </Badge>
                         <motion.h1 variants={itemVars} className="text-5xl md:text-7xl italic leading-[0.9] mb-8 tracking-tigh font-semibold">
                             Generate <span className="not-italic text-primary">docs</span> from a single <span className="text-destructive">url</span>
@@ -279,7 +279,7 @@ function PresetItem({ name, status, desc }: { name: string, status: string, desc
             <div className="flex justify-between items-center mb-4">
                 <h4 className="text-[11px] font-black uppercase tracking-widest">{name}</h4>
                 <Badge variant="outline" className={`rounded-none text-[8px] uppercase px-1.5 py-0 ${status === 'Native' ? 'border-emerald-500/50 text-emerald-500' :
-                        status === 'Beta' ? 'border-warning/50 text-warning' : 'opacity-30'
+                    status === 'Beta' ? 'border-warning/50 text-warning' : 'opacity-30'
                     }`}>
                     {status}
                 </Badge>
