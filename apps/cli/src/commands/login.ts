@@ -17,10 +17,12 @@ import {
   CliRenderer,
   Box,
   Text,
+  KeyEvent,
 } from "@opentui/core";
 import { C } from "../constants/colors";
 import { setAccessToken, setGeminiApiKey } from "../store/config.store";
 import { CONFIG } from "@subhraneel2005/docshub-core/config/env";
+import { copyToClipboard } from "../lib/copy-to-clipboard";
 
 export async function login(renderer: CliRenderer) {
   const headerText = new TextRenderable(renderer, {
@@ -61,6 +63,11 @@ export async function login(renderer: CliRenderer) {
     showCursor: true,
   });
 
+  const copyHintText = new TextRenderable(renderer, {
+    id: "copy-hint",
+    content: t`${dim("ctrl+y to copy code")}`
+  });
+
   const resultText = new TextRenderable(renderer, {
     id: "result",
     content: t``,
@@ -92,6 +99,7 @@ export async function login(renderer: CliRenderer) {
       headerText,
       statusText,
       infoText,
+      copyHintText,
       dividerText,
       Text({
         content: t`${dim("optional:")} ${fg(C.secondary)("gemini api key")}`,
@@ -114,10 +122,24 @@ export async function login(renderer: CliRenderer) {
   headerText.content = t`${fg(C.secondary)("github authentication")}`;
   renderer.start();
 
+  // 👇 track the current code so the keypress handler can access it
+  let currentUserCode = "";
+
+  // 👇 Ctrl+Y copies the user_code (Ctrl+C is taken by exitOnCtrlC)
+  renderer.keyInput.on("keypress", (key: KeyEvent) => {
+    if (key.ctrl && key.name === "y" && currentUserCode) {
+      copyToClipboard(currentUserCode);
+
+      copyHintText.content = t`${fg(C.success)("✔ copied to clipboard!")}`;
+      renderer.start();
+    }
+  });
+
   const auth = createOAuthDeviceAuth({
     clientId: CONFIG.GITHUB_OAUTH_CLIENT_ID,
     scopes: ["repo", "read:user"],
     onVerification: ({ verification_uri, user_code }) => {
+      currentUserCode = user_code;
       statusText.content = t`${fg(C.warning)("action required")}`;
 
       infoText.content = t`
@@ -133,6 +155,9 @@ ${bold(fg(C.success)(user_code))}
 
   try {
     const result = await auth({ type: "oauth" });
+
+    copyHintText.content = t``;
+    currentUserCode = "";
 
     statusText.content = t`${fg(C.success)("✔ authenticated")}`;
     infoText.content = t`${dim("saving credentials...")}`;
