@@ -1,6 +1,6 @@
 {
   "name": "@subhraneel2005/docshub-core",
-  "version": "1.0.1",
+  "version": "1.0.4",
   "description": "",
   "main": "dist/index.js",
   "files": ["dist"],
@@ -19,7 +19,6 @@
     "@octokit/auth-oauth-device": "^8.0.3",
     "@octokit/rest": "^22.0.1",
     "@octokit/types": "^16.0.0",
-    "@repo/typescript-config": "workspace:*",
     "ai": "^6.0.73",
     "chalk": "^5.6.2",
     "dotenv": "^17.2.3",
