@@ -1,8 +1,8 @@
 {
   "name": "@subhraneel2005/docshub",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "description": "",
-  "files": ["dist"],
+  "files": ["dist" , "README.md"],
   "bin": {
     "docshub": "./dist/index.js"
   },
