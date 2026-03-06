@@ -12,7 +12,7 @@
     },
     "apps/cli": {
       "name": "@subhraneel2005/docshub",
-      "version": "1.0.8",
+      "version": "1.0.9",
       "bin": {
         "docshub": "./dist/index.js",
       },

@@ -1,12 +1,14 @@
 "use client"
 
 import React, { useState } from 'react';
-import { motion, Variants } from 'framer-motion';
+import { AnimatePresence, motion, Variants } from 'framer-motion';
 import {
     Terminal, Github, BookOpen, Zap, Copy, Check, Cpu, Globe,
     ArrowRight, Key, ShieldCheck, FileSearch, BrainCircuit,
     FolderDown, Files, GitBranch, TerminalIcon, FileCode, FolderPlus,
-    Star
+    Star,
+    X,
+    Menu
 } from 'lucide-react';
 
 // shadcn/ui imports
@@ -27,15 +29,6 @@ const COMMANDS: Record<PackageManager, string> = {
     pnpm: 'pnpm add -g @subhraneel2005/docshub'
 };
 
-// --- Animations ---
-const containerVars: Variants = {
-    hidden: { opacity: 0 },
-    visible: {
-        opacity: 1,
-        transition: { staggerChildren: 0.1, delayChildren: 0.2 }
-    }
-};
-
 const itemVars: Variants = {
     hidden: { y: 20, opacity: 0 },
     visible: {
@@ -45,9 +38,16 @@ const itemVars: Variants = {
     }
 };
 
+const navLinks = [
+    { name: 'Presets', href: '/presets' },
+    { name: 'Changelog', href: '/changelog' },
+    { name: 'Twitter', href: 'https://x.com/subhraneeltwt', external: true },
+];
+
 export default function DocshubLanding() {
     const [activeTab, setActiveTab] = useState<PackageManager>('npm');
     const [copied, setCopied] = useState<boolean>(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const copyToClipboard = async (text: string): Promise<void> => {
         try {
@@ -64,24 +64,79 @@ export default function DocshubLanding() {
             <div className="fixed inset-0 pointer-events-none z-50 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-multiply" />
 
             {/* Navigation */}
-            <nav className="flex justify-between items-center px-6 md:px-12 py-6 border-b border-border sticky top-0 z-40 bg-background/80 backdrop-blur-md">
-                <div className="flex items-center gap-4">
-                    <span className="text-2xl font-bold tracking-tighter uppercase italic">Docshub</span>
+            <nav className="border-b border-border sticky top-0 z-40 bg-background/80 backdrop-blur-md">
+                <div className="flex justify-between items-center px-6 md:px-12 py-4 md:py-6 max-w-7xl mx-auto w-full">
+                    <div className="flex items-center gap-4">
+                        <Link href="/" className="text-2xl font-bold tracking-tighter uppercase italic">Docshub</Link>
+                    </div>
+
+                    {/* Desktop Nav */}
+                    <div className="hidden md:flex gap-8 items-center">
+                        {navLinks.map((link) => (
+                            <Link
+                                key={link.name}
+                                href={link.href}
+                                target={link.external ? "_blank" : undefined}
+                                className="text-[10px] uppercase tracking-[0.2em] font-bold opacity-60 hover:opacity-100 hover:text-primary transition-all"
+                            >
+                                {link.name}
+                            </Link>
+                        ))}
+                        <Link href="https://github.com/subhraneel2005/docshub" target="_blank">
+                            <Button variant="outline" size="sm" className="gap-0 border-primary/20 p-0 overflow-hidden group">
+                                <div className="flex items-center gap-2 px-3 py-2 border-r border-primary/10 group-hover:bg-primary/5 transition-colors">
+                                    <Github size={14} />
+                                    <span className="text-[10px] uppercase tracking-widest font-bold">GitHub</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 px-3 py-2 bg-muted/50 text-[10px] font-mono">
+                                    <Star fill='yellow' size={12} className="text-warning fill-warning" />
+                                    <span>2</span>
+                                </div>
+                            </Button>
+                        </Link>
+                    </div>
+
+                    {/* Mobile Toggle */}
+                    <button className="md:hidden p-2 text-primary" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+                        {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                    </button>
                 </div>
-                <div className="hidden md:flex gap-4 items-center">
-                    <Link href="https://github.com/subhraneel2005/docshub" target="_blank">
-                        <Button variant="outline" size="sm" className="gap-0 border-primary/20 p-0 overflow-hidden group">
-                            <div className="flex items-center gap-2 px-3 py-2 border-r border-primary/10 group-hover:bg-primary/5 transition-colors">
-                                <Github size={14} />
-                                <span className="text-[10px] uppercase tracking-widest font-bold">GitHub</span>
+
+                {/* Mobile Menu Overlay */}
+                <AnimatePresence>
+                    {isMenuOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="md:hidden border-t border-border bg-background px-6 py-8 space-y-6"
+                        >
+                            <div className="flex flex-col gap-6">
+                                {navLinks.map((link) => (
+                                    <Link
+                                        key={link.name}
+                                        href={link.href}
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="text-xs uppercase tracking-[0.3em] font-black border-l-2 border-transparent hover:border-primary pl-4 transition-all"
+                                    >
+                                        {link.name}
+                                    </Link>
+                                ))}
                             </div>
-                            <div className="flex items-center gap-1.5 px-3 py-2 bg-muted/50 text-[10px] font-mono">
-                                <Star fill='#e3b342' size={12} className="text-warning fill-warning" />
-                                <span>2</span>
-                            </div>
-                        </Button>
-                    </Link>
-                </div>
+                            <Separator className="bg-border/50" />
+                            <Link href="https://github.com/subhraneel2005/docshub" target="_blank" className="block">
+                                <Button variant="outline" className="w-full justify-between rounded-none border-primary/20">
+                                    <div className="flex gap-2 items-center text-[10px] uppercase font-bold tracking-widest">
+                                        <Github size={16} /> GitHub
+                                    </div>
+                                    <div className="flex items-center gap-1 text-[10px] font-mono">
+                                        <Star fill='yellow' size={12} className="text-warning" /> 2
+                                    </div>
+                                </Button>
+                            </Link>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </nav>
 
             <main className="max-w-7xl mx-auto px-6 md:px-12 py-20">
@@ -218,44 +273,6 @@ export default function DocshubLanding() {
                         </div>
                     </div>
                 </section>
-
-                {/* New Section: The Universal Adaptor (Presets) */}
-                <motion.section
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="mb-40"
-                >
-                    <Card className="rounded-none border-border bg-background overflow-hidden">
-                        <div className="grid grid-cols-1 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x border-b border-border">
-                            <div className="p-8 bg-muted/20">
-                                <h3 className="text-xl font-bold italic tracking-tighter mb-2 underline decoration-destructive underline-offset-4">Presets</h3>
-                                <p className="text-xs text-muted-foreground italic">Target any documentation engine with a single flag.</p>
-                            </div>
-                            <PresetItem
-                                name="Fumadocs"
-                                status="Native"
-                                desc="Auto-generates _meta.json and directory mapping."
-                            />
-                            <PresetItem
-                                name="Mintlify"
-                                status="Beta"
-                                desc="Compiles a ready-to-use mint.json configuration."
-                            />
-                            <PresetItem
-                                name="Nextra"
-                                status="Planned"
-                                desc="Structured for Next.js 14 App Router docs."
-                            />
-                        </div>
-                        <div className="bg-primary/5 p-4 flex justify-center items-center gap-4 border-t border-border">
-                            <span className="text-[9px] uppercase tracking-[0.3em] font-bold opacity-40">Pro Tip: Use</span>
-                            <code className="text-[10px] bg-background px-2 py-1 border border-primary/20 font-mono text-primary">
-                                docshub --preset mintlify
-                            </code>
-                        </div>
-                    </Card>
-                </motion.section>
             </main>
 
             <footer className="mt-20 border-t border-border py-12 bg-muted/30">
@@ -264,27 +281,12 @@ export default function DocshubLanding() {
                         © 2026 Docshub. Built for Engineers.
                     </p>
                     <div className="flex gap-8">
-                        <a href="#" className="text-[10px] uppercase tracking-[0.2em] hover:text-destructive transition-colors underline underline-offset-4 decoration-destructive/30">Changelog</a>
+                        <a href="/presets" className="text-[10px] uppercase tracking-[0.2em] hover:text-destructive transition-colors underline underline-offset-4 decoration-destructive/30">Presets</a>
+                        <a href="/changelog" className="text-[10px] uppercase tracking-[0.2em] hover:text-destructive transition-colors underline underline-offset-4 decoration-destructive/30">Changelog</a>
                         <a href="https://x.com/subhraneeltwt" target='_blank' className="text-[10px] uppercase tracking-[0.2em] hover:text-destructive transition-colors underline underline-offset-4 decoration-destructive/30">Twitter</a>
                     </div>
                 </div>
             </footer>
-        </div>
-    );
-}
-
-function PresetItem({ name, status, desc }: { name: string, status: string, desc: string }) {
-    return (
-        <div className="p-8 hover:bg-muted/30 transition-colors group">
-            <div className="flex justify-between items-center mb-4">
-                <h4 className="text-[11px] font-black uppercase tracking-widest">{name}</h4>
-                <Badge variant="outline" className={`rounded-none text-[8px] uppercase px-1.5 py-0 ${status === 'Native' ? 'border-emerald-500/50 text-emerald-500' :
-                    status === 'Beta' ? 'border-warning/50 text-warning' : 'opacity-30'
-                    }`}>
-                    {status}
-                </Badge>
-            </div>
-            <p className="text-[10px] text-muted-foreground leading-relaxed">{desc}</p>
         </div>
     );
 }
