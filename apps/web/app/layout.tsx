@@ -6,12 +6,12 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Docshub | AI Documentation CLI",
   description: "Generate documentation from just your github repo url, all inside your terminal.",
-  metadataBase: new URL('https://docshub.vercel.app'),
+  metadataBase: new URL('https://docshubb.vercel.app'),
 
   openGraph: {
     title: "Docshub",
     description: "Generate documentation from your GitHub repo URL, all inside your terminal.",
-    url: "https://docshub.vercel.app",
+    url: "https://docshubb.vercel.app",
     siteName: "Docshub",
     locale: "en_US",
     type: "website",
